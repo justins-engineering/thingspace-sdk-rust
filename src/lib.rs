@@ -4,47 +4,42 @@
 //! This library currently only covers the NBIoT related API endpoints.
 
 use base64ct::{Base64, Encoding};
+use const_format::concatcp;
 use serde::{Deserialize, Serialize};
 use std::str;
-use ureq::{http::response, Error};
-
-// #[derive(Serialize)]
-// struct MySendBody {
-//    thing: String,
-// }
 
 /// A struct containing a user's Verizon account secrets required for API use.
 #[derive(Deserialize)]
 pub struct Secrets {
-    public_key: String,
-    private_key: String,
-    username: String,
-    password: String,
-    account_name: String,
+  public_key: String,
+  private_key: String,
+  username: String,
+  password: String,
+  account_name: String,
 }
 
 /// A struct containing the deserialized JSON returned from an OAuth2 access token API request.
 #[derive(Deserialize)]
 pub struct LoginResponse {
-    /// The OAuth2 access token.
-    pub access_token: String,
-    /// The OAuth2 access token scope.
-    pub scope: String,
-    /// The OAuth2 access token type.
-    pub token_type: String,
-    /// The OAuth2 access TTL.
-    pub expires_in: i32,
+  /// The OAuth2 access token.
+  pub access_token: String,
+  /// The OAuth2 access token scope.
+  pub scope: String,
+  /// The OAuth2 access token type.
+  pub token_type: String,
+  /// The OAuth2 access TTL.
+  pub expires_in: i32,
 }
 
 impl Default for LoginResponse {
-    fn default() -> LoginResponse {
-        LoginResponse {
-            access_token: String::with_capacity(64),
-            scope: String::with_capacity(64),
-            token_type: String::with_capacity(16),
-            expires_in: 0,
-        }
+  fn default() -> LoginResponse {
+    LoginResponse {
+      access_token: String::with_capacity(64),
+      scope: String::with_capacity(64),
+      token_type: String::with_capacity(16),
+      expires_in: 0,
     }
+  }
 }
 
 const LOGIN_BUF_SIZE: usize = 96;
@@ -53,33 +48,33 @@ const AUTH_KEY: &[u8] = b"Basic ";
 const LOGIN_URL: &str = "https://thingspace.verizon.com/api/ts/v1/oauth2/token";
 
 fn encode_login_field<'a>(
-    secrets: &'a Secrets,
-    dst: &'a mut [u8],
+  secrets: &'a Secrets,
+  dst: &'a mut [u8],
 ) -> Result<&'a [u8], Box<dyn std::error::Error>> {
-    let mut login_buf = [0u8; LOGIN_BUF_SIZE];
-    assert!(
-        secrets.public_key.len() + secrets.private_key.len() + 2 <= LOGIN_BUF_SIZE,
-        "LOGIN_BUF_SIZE is too small!"
-    );
+  let mut login_buf = [0u8; LOGIN_BUF_SIZE];
+  assert!(
+    secrets.public_key.len() + secrets.private_key.len() + 2 <= LOGIN_BUF_SIZE,
+    "LOGIN_BUF_SIZE is too small!"
+  );
 
-    let dec_len = secrets.public_key.len() + secrets.private_key.len();
+  let dec_len = secrets.public_key.len() + secrets.private_key.len();
 
-    let (key, value) = login_buf.split_at_mut(secrets.public_key.len());
-    key.copy_from_slice(secrets.public_key.as_bytes());
-    value[0] = b':';
-    let value = &mut value[1..=secrets.private_key.len()];
-    value.copy_from_slice(secrets.private_key.as_bytes());
+  let (key, value) = login_buf.split_at_mut(secrets.public_key.len());
+  key.copy_from_slice(secrets.public_key.as_bytes());
+  value[0] = b':';
+  let value = &mut value[1..=secrets.private_key.len()];
+  value.copy_from_slice(secrets.private_key.as_bytes());
 
-    assert!(
-        Base64::encoded_len(&login_buf[..=dec_len]) + AUTH_KEY.len() <= BASE64_BUF_SIZE,
-        "BASE64_BUF_SIZE is too small!"
-    );
+  assert!(
+    Base64::encoded_len(&login_buf[..=dec_len]) + AUTH_KEY.len() <= BASE64_BUF_SIZE,
+    "BASE64_BUF_SIZE is too small!"
+  );
 
-    let (key, value) = dst.split_at_mut(AUTH_KEY.len());
-    key.copy_from_slice(b"Basic ");
-    Base64::encode(&login_buf[..=dec_len], value)?;
+  let (key, value) = dst.split_at_mut(AUTH_KEY.len());
+  key.copy_from_slice(b"Basic ");
+  Base64::encode(&login_buf[..=dec_len], value)?;
 
-    Ok(dst)
+  Ok(dst)
 }
 
 /// Makes an API request for an OAuth2 access token and returns a [`LoginResponse`].
@@ -107,7 +102,7 @@ fn encode_login_field<'a>(
 /// use std::fs;
 /// use thingspace_sdk::{Secrets, LoginResponse};
 ///
-/// fn read_secrets_from_file() {
+/// fn access_token() {
 ///   let file = fs::read_to_string("./secrets.toml").unwrap();
 ///   let secrets = toml::from_str::<Secrets>(&file).expect("Failed to read from secrets.toml");
 ///   let mut login = LoginResponse::default();
@@ -124,20 +119,103 @@ fn encode_login_field<'a>(
 /// }
 /// ```
 pub fn get_access_token<'a>(
-    secrets: &'a Secrets,
-    response: &'a mut LoginResponse,
+  secrets: &'a Secrets,
+  response: &'a mut LoginResponse,
 ) -> Result<&'a LoginResponse, Box<dyn std::error::Error>> {
-    let mut enc_buf = [0u8; BASE64_BUF_SIZE];
-    let auth = encode_login_field(secrets, &mut enc_buf).expect("Failed to encode login field");
-    let auth = std::str::from_utf8(auth)?.trim_end_matches('\0');
+  let mut enc_buf = [0u8; BASE64_BUF_SIZE];
+  let auth = encode_login_field(secrets, &mut enc_buf).expect("Failed to encode login field");
+  let auth = std::str::from_utf8(auth)?.trim_end_matches('\0');
 
-    *response = ureq::post(LOGIN_URL)
-        .header("Accept", "application/json")
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .header("Authorization", auth)
-        .send("grant_type=client_credentials")?
-        .body_mut()
-        .read_json::<LoginResponse>()?;
+  *response = ureq::post(LOGIN_URL)
+    .header("Accept", "application/json")
+    .header("Content-Type", "application/x-www-form-urlencoded")
+    .header("Authorization", auth)
+    .send("grant_type=client_credentials")?
+    .body_mut()
+    .read_json::<LoginResponse>()?;
 
-    Ok(response)
+  Ok(response)
+}
+
+const M2M_REST_API_V1: &str = "https://thingspace.verizon.com/api/m2m/v1";
+const SESSION_KEY: &str = "Bearer ";
+const AUTH_BUF_SIZE: usize = 64;
+
+#[derive(Serialize)]
+struct SessionRequestBody {
+  username: String,
+  password: String,
+}
+
+/// A struct containing a session access and it's TTL.
+#[derive(Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Session {
+  /// The session token.
+  pub session_token: String,
+  /// The session token TTL.
+  /// "The token will remain valid as long as your application continues to use it, but it will expire after 20 minutes of inactivity."
+  pub expires_in: i32,
+}
+
+impl Default for Session {
+  fn default() -> Session {
+    Session {
+      session_token: String::with_capacity(64),
+      expires_in: 1200,
+    }
+  }
+}
+
+/// Makes an API request for a M2M session token and returns a [`Session`].
+/// # Errors
+/// Returns HTTP response code or `std::error::Error`.
+///
+/// # Example
+/// ```rust
+/// use std::fs;
+/// use thingspace_sdk::{Secrets, LoginResponse, Session};
+///
+/// fn session_token() {
+///   let file = fs::read_to_string("./secrets.toml").unwrap();
+///   let secrets = toml::from_str::<Secrets>(&file).expect("Failed to read from secrets.toml");
+///   let mut login = LoginResponse::default();
+///   let mut session = Session::default();
+///
+///   match thingspace_sdk::get_session_token(&secrets, &login.access_token, &mut session) {
+///     Ok(response) => {
+///       println!(
+///         "Session token: {}, Expires in: {}",
+///         response.session_token, response.expires_in
+///       );
+///     }
+///     Err(error) => {
+///       println!("{error:?}");
+///     }
+///   }
+/// }
+/// ```
+pub fn get_session_token<'a>(
+  secrets: &'a Secrets,
+  access_token: &'a str,
+  response: &'a mut Session,
+) -> Result<&'a Session, Box<dyn std::error::Error>> {
+  let mut auth = String::with_capacity(AUTH_BUF_SIZE);
+  auth.push_str(SESSION_KEY);
+  auth.push_str(access_token);
+
+  let login: SessionRequestBody = SessionRequestBody {
+    username: secrets.username.clone(),
+    password: secrets.password.clone(),
+  };
+
+  *response = ureq::post(concatcp!(M2M_REST_API_V1, "/session/login"))
+    .header("Accept", "application/json")
+    .header("Content-Type", "application/json")
+    .header("Authorization", auth)
+    .send_json(&login)?
+    .body_mut()
+    .read_json::<Session>()?;
+
+  Ok(response)
 }

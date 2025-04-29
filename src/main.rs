@@ -1,5 +1,5 @@
 use std::fs;
-use thingspace_sdk::{Secrets, LoginResponse};
+use thingspace_sdk::{LoginResponse, Secrets, Session};
 
 fn read_secrets_from_file() -> Result<Secrets, Box<dyn std::error::Error>> {
   let file = fs::read_to_string("./secrets.toml")?;
@@ -17,7 +17,23 @@ fn main() {
         "Access token: {}, Scope: {}, TokenType: {}, Expires in: {}",
         response.access_token, response.scope, response.token_type, response.expires_in
       );
-    },
-    Err(error) => { println!("{error:?}"); }
+    }
+    Err(error) => {
+      println!("{error:?}");
+    }
+  }
+
+  let mut session = Session::default();
+
+  match thingspace_sdk::get_session_token(&secrets, &login.access_token, &mut session) {
+    Ok(response) => {
+      println!(
+        "Session token: {}, Expires in: {}",
+        response.session_token, response.expires_in
+      );
+    }
+    Err(error) => {
+      println!("{error:?}");
+    }
   }
 }
