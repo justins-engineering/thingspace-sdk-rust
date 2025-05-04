@@ -1,4 +1,5 @@
 use std::fs;
+use thingspace_sdk::devices::{AccountDeviceListRequest, AccountDeviceListResult, devices_list};
 use thingspace_sdk::{LoginResponse, Secrets, Session};
 
 fn read_secrets_from_file() -> Result<Secrets, Box<dyn std::error::Error>> {
@@ -31,6 +32,24 @@ fn main() {
         "Session token: {}, Expires in: {}",
         response.session_token, response.expires_in
       );
+    }
+    Err(error) => {
+      println!("{error:?}");
+    }
+  }
+
+  let mut device_request = AccountDeviceListRequest::default();
+  let mut device_result = AccountDeviceListResult::default();
+
+  match devices_list(
+    &secrets,
+    &login.access_token,
+    &session.session_token,
+    &mut device_request,
+    &mut device_result,
+  ) {
+    Ok(response) => {
+      println!("{:?}", response.devices[0]);
     }
     Err(error) => {
       println!("{error:?}");

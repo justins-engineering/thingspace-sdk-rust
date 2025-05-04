@@ -8,8 +8,25 @@ use const_format::concatcp;
 use serde::{Deserialize, Serialize};
 use std::str;
 
+/// Functions for use with "Device Management" API endpoints, primarily `/devices/actions/list`
+pub mod devices;
+
+const AUTH_BEARER: &str = "Bearer ";
+const M2M_REST_API_V1: &str = "https://thingspace.verizon.com/api/m2m/v1";
+const AUTH_BUF_SIZE: usize = 64;
+const SESSION_TOKEN_FIELD: &str = "VZ-M2M-Token";
+
+fn oauth_field(access_token: &str) -> String {
+  let mut auth = String::with_capacity(AUTH_BUF_SIZE);
+  auth.push_str(AUTH_BEARER);
+  auth.push_str(access_token);
+
+  auth
+}
+
 /// A struct containing a user's Verizon account secrets required for API use.
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct Secrets {
   public_key: String,
   private_key: String,
@@ -42,9 +59,9 @@ impl Default for LoginResponse {
   }
 }
 
+const AUTH_BASIC: &[u8] = b"Basic ";
 const LOGIN_BUF_SIZE: usize = 96;
 const BASE64_BUF_SIZE: usize = 128;
-const AUTH_KEY: &[u8] = b"Basic ";
 const LOGIN_URL: &str = "https://thingspace.verizon.com/api/ts/v1/oauth2/token";
 
 fn encode_login_field<'a>(
@@ -66,12 +83,12 @@ fn encode_login_field<'a>(
   value.copy_from_slice(secrets.private_key.as_bytes());
 
   assert!(
-    Base64::encoded_len(&login_buf[..=dec_len]) + AUTH_KEY.len() <= BASE64_BUF_SIZE,
+    Base64::encoded_len(&login_buf[..=dec_len]) + AUTH_BASIC.len() <= BASE64_BUF_SIZE,
     "BASE64_BUF_SIZE is too small!"
   );
 
-  let (key, value) = dst.split_at_mut(AUTH_KEY.len());
-  key.copy_from_slice(b"Basic ");
+  let (key, value) = dst.split_at_mut(AUTH_BASIC.len());
+  key.copy_from_slice(AUTH_BASIC);
   Base64::encode(&login_buf[..=dec_len], value)?;
 
   Ok(dst)
@@ -137,10 +154,6 @@ pub fn get_access_token<'a>(
   Ok(response)
 }
 
-const M2M_REST_API_V1: &str = "https://thingspace.verizon.com/api/m2m/v1";
-const SESSION_KEY: &str = "Bearer ";
-const AUTH_BUF_SIZE: usize = 64;
-
 #[derive(Serialize)]
 struct SessionRequestBody {
   username: String,
@@ -200,11 +213,7 @@ pub fn get_session_token<'a>(
   access_token: &'a str,
   response: &'a mut Session,
 ) -> Result<&'a Session, Box<dyn std::error::Error>> {
-  let mut auth = String::with_capacity(AUTH_BUF_SIZE);
-  auth.push_str(SESSION_KEY);
-  auth.push_str(access_token);
-
-  let login: SessionRequestBody = SessionRequestBody {
+  let request: SessionRequestBody = SessionRequestBody {
     username: secrets.username.clone(),
     password: secrets.password.clone(),
   };
@@ -212,8 +221,8 @@ pub fn get_session_token<'a>(
   *response = ureq::post(concatcp!(M2M_REST_API_V1, "/session/login"))
     .header("Accept", "application/json")
     .header("Content-Type", "application/json")
-    .header("Authorization", auth)
-    .send_json(&login)?
+    .header("Authorization", oauth_field(access_token))
+    .send_json(&request)?
     .body_mut()
     .read_json::<Session>()?;
 
