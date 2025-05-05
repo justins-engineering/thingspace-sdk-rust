@@ -11,6 +11,9 @@ use std::str;
 /// Functions for use with "Device Management" API endpoints, primarily `/devices/actions/list`
 pub mod devices;
 
+/// Functions for use with "Registered Callbacks Listeners" API endpoints
+pub mod registered_callback_listeners;
+
 const AUTH_BEARER: &str = "Bearer ";
 const M2M_REST_API_V1: &str = "https://thingspace.verizon.com/api/m2m/v1";
 const AUTH_BUF_SIZE: usize = 64;
