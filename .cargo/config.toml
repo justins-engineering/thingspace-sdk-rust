@@ -6,3 +6,12 @@ codegen-units = 1
 lto = "fat"
 strip = "debuginfo"
 panic = "abort"
+opt-level = "z"
+debug = false
+incremental = false
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1

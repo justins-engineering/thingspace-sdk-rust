@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "daisyui": "^5.1.23",
+    "tailwindcss": "^4.1.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.13",
+    "wrangler": "^4.40.2"
+  }
+}

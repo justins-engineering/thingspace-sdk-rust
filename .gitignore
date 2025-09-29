@@ -14,3 +14,10 @@ target/
 
 # Secrets file
 secrets.toml
+
+# CF wrangler files
+.wrangler
+build
+.env*
+
+**/node_modules/

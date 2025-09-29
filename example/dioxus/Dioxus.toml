@@ -1,0 +1,13 @@
+[application]
+
+[bundle]
+icon = ["assets/images/favicon.ico"]
+
+[web]
+pre_compress = false
+
+[web.app]
+title = "Thingspace SDK"
+
+[web.watcher]
+index_on_404 = true

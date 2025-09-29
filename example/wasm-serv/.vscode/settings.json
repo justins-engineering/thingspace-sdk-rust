@@ -12,15 +12,6 @@
     "--include-directory=${workspaceFolder}/include"
   ],
   "rust-analyzer.check.command": "clippy",
-  "tailwindCSS.experimental.classRegex": [
-    "class: \"(.*)\""
-  ],
-  "tailwindCSS.includeLanguages": {
-    "rust": "html"
-  },
-  "files.associations": {
-    "*.css": "tailwindcss"
-  },
   "editor.quickSuggestions": {
     "strings": "on"
   }

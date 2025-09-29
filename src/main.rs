@@ -1,22 +1,29 @@
+#[cfg(feature = "ureq")]
 use std::fs;
-use thingspace_sdk::devices::{AccountDeviceListRequest, AccountDeviceListResult, devices_list};
-use thingspace_sdk::registered_callback_listeners::{
-  CallbackListener, CallbackListenerResponse, deregister_callback_listener,
-  list_callback_listeners, register_callback_listener,
+#[cfg(feature = "ureq")]
+use thingspace_sdk::api::{
+  deregister_callback_listener, devices_list, list_callback_listeners, register_callback_listener,
 };
-use thingspace_sdk::{LoginResponse, Secrets, Session};
+#[cfg(feature = "ureq")]
+use thingspace_sdk::models::{
+  AccountDeviceListRequest, AccountDeviceListResponse, CallbackListener, CallbackListenerResponse,
+  LoginResponse, Secrets, Session,
+};
 
+#[cfg(feature = "ureq")]
 fn read_secrets_from_file() -> Result<Secrets, Box<dyn std::error::Error>> {
   let file = fs::read_to_string("./secrets.toml")?;
   let secrets = toml::from_str::<Secrets>(&file)?;
   Ok(secrets)
 }
 
+#[cfg(feature = "ureq")]
 struct Credentials {
   access_token: String,
   session_token: String,
 }
 
+#[cfg(feature = "ureq")]
 fn main() {
   let secrets = read_secrets_from_file().expect("Failed to read from secrets.toml");
 
@@ -34,10 +41,14 @@ fn main() {
   print_listeners(&secrets, &mut credentials);
 }
 
+#[cfg(any(feature = "wasm", feature = "worker"))]
+fn main() {}
+
+#[cfg(feature = "ureq")]
 fn get_credentials(secrets: &Secrets, cred: &mut Credentials) {
   let mut login = LoginResponse::default();
 
-  match thingspace_sdk::get_access_token(secrets, &mut login) {
+  match thingspace_sdk::api::get_access_token(secrets, &mut login) {
     Ok(response) => {
       println!(
         "Access token: {}, Scope: {}, TokenType: {}, Expires in: {}",
@@ -52,7 +63,7 @@ fn get_credentials(secrets: &Secrets, cred: &mut Credentials) {
 
   let mut session = Session::default();
 
-  match thingspace_sdk::get_session_token(secrets, &login.access_token, &mut session) {
+  match thingspace_sdk::api::get_session_token(secrets, &login.access_token, &mut session) {
     Ok(response) => {
       println!(
         "Session token: {}, Expires in: {}",
@@ -66,9 +77,10 @@ fn get_credentials(secrets: &Secrets, cred: &mut Credentials) {
   }
 }
 
+#[cfg(feature = "ureq")]
 fn get_devices(secrets: &Secrets, cred: &mut Credentials) {
   let mut device_request = AccountDeviceListRequest::default();
-  let mut device_result = AccountDeviceListResult::default();
+  let mut device_result = AccountDeviceListResponse::default();
 
   match devices_list(
     secrets,
@@ -86,6 +98,7 @@ fn get_devices(secrets: &Secrets, cred: &mut Credentials) {
   }
 }
 
+#[cfg(feature = "ureq")]
 fn set_callback_listener(secrets: &Secrets, cred: &mut Credentials) {
   let mut rcl = CallbackListener {
     service_name: "CarrierService".to_string(),
@@ -114,6 +127,7 @@ fn set_callback_listener(secrets: &Secrets, cred: &mut Credentials) {
   }
 }
 
+#[cfg(feature = "ureq")]
 fn delete_callback_listener(secrets: &Secrets, cred: &mut Credentials) {
   let service_name = "CarrierService".to_string();
 
@@ -138,6 +152,7 @@ fn delete_callback_listener(secrets: &Secrets, cred: &mut Credentials) {
   }
 }
 
+#[cfg(feature = "ureq")]
 fn print_listeners(secrets: &Secrets, cred: &mut Credentials) {
   let mut rcls = vec![CallbackListener {
     account_name: Some(String::with_capacity(16)),
