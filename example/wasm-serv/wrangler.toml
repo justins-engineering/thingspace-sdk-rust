@@ -1,5 +1,5 @@
 name = "thingspace-sdk"
-compatibility_date = "2025-09-29"
+compatibility_date = "2025-09-30"
 send_metrics = false
 # upload_source_maps = true
 main = "build/worker/shim.mjs"
@@ -8,7 +8,7 @@ main = "build/worker/shim.mjs"
 directory = "../dioxus/target/dx/web-client/release/web/public"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/browser/*"]
 
 [build]
 command = "( cd ../dioxus && ./build.sh ) && cargo install -q worker-build && worker-build --release"
