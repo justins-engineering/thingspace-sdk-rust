@@ -6,6 +6,8 @@ mod browser;
 #[cfg(feature = "api")]
 mod api;
 
+mod cache;
+
 #[cfg(all(feature = "browser", not(feature = "api")))]
 #[event(fetch)]
 async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
@@ -19,20 +21,36 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 #[event(fetch)]
 async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
   Router::new()
-    .post_async("/api/access_token", access_token_api)
-    .post_async("/api/session_token", session_token)
+    .get_async("/api/callbacks", api::list_callbacks)
+    .post_async("/api/devices", api::list_devices)
     .run(req, env)
     .await
 }
+// #[event(fetch)]
+// async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
+//   Router::new()
+//     .post_async("/api/access_token", access_token_api)
+//     .post_async("/api/session_token", session_token)
+//     .run(req, env)
+//     .await
+// }
 
 #[cfg(all(feature = "browser", feature = "api"))]
 #[event(fetch)]
 async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
   Router::new()
-    .post_async("/browser/access_token", browser::access_token)
-    .post_async("/api/access_token", api::access_token)
-    .post_async("/browser/session_token", browser::session_token)
-    .post_async("/api/session_token", api::session_token)
+    .get_async("/api/callbacks", api::list_callbacks)
     .run(req, env)
     .await
 }
+
+// #[event(fetch)]
+// async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
+//   Router::new()
+//     .post_async("/browser/access_token", browser::access_token)
+//     .post_async("/api/access_token", api::access_token)
+//     .post_async("/browser/session_token", browser::session_token)
+//     .post_async("/api/session_token", api::session_token)
+//     .run(req, env)
+//     .await
+// }

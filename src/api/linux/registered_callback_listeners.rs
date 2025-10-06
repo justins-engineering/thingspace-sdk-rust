@@ -41,7 +41,7 @@ use const_format::concatcp;
 /// }
 /// ```
 pub fn register_callback_listener<'a>(
-  secrets: &Secrets,
+  account_name: &'a str,
   access_token: &'a str,
   session_token: &'a str,
   request: &'a mut CallbackListener,
@@ -49,7 +49,7 @@ pub fn register_callback_listener<'a>(
 ) -> Result<&'a CallbackListenerResponse, Box<dyn std::error::Error>> {
   let mut url = String::with_capacity(80);
   url.push_str(concatcp!(M2M_REST_API_V1, "/callbacks/"));
-  url.push_str(&secrets.account_name);
+  url.push_str(account_name);
 
   *response = ureq::post(url)
     .header("Accept", "application/json")
@@ -98,7 +98,7 @@ pub fn register_callback_listener<'a>(
 /// }
 /// ```
 pub fn deregister_callback_listener<'a>(
-  secrets: &Secrets,
+  account_name: &'a str,
   access_token: &'a str,
   session_token: &'a str,
   service_name: &'a str,
@@ -106,7 +106,7 @@ pub fn deregister_callback_listener<'a>(
 ) -> Result<&'a CallbackListenerResponse, Box<dyn std::error::Error>> {
   let mut url = String::with_capacity(128);
   url.push_str(concatcp!(M2M_REST_API_V1, "/callbacks/"));
-  url.push_str(&secrets.account_name);
+  url.push_str(account_name);
   url.push_str("/name/");
   url.push_str(service_name);
 
@@ -161,14 +161,14 @@ pub fn deregister_callback_listener<'a>(
 /// }
 /// ```
 pub fn list_callback_listeners<'a>(
-  secrets: &Secrets,
+  account_name: &'a str,
   access_token: &'a str,
   session_token: &'a str,
   response: &'a mut Vec<CallbackListener>,
 ) -> Result<&'a Vec<CallbackListener>, Box<dyn std::error::Error>> {
   let mut url = String::with_capacity(80);
   url.push_str(concatcp!(M2M_REST_API_V1, "/callbacks/"));
-  url.push_str(&secrets.account_name);
+  url.push_str(account_name);
 
   *response = ureq::get(url)
     .header("Accept", "application/json")

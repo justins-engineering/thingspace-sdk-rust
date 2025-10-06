@@ -2,22 +2,21 @@ use serde::{Deserialize, Serialize};
 use std::{error, fmt};
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ThingSpaceError {
-  /// Response status code
-  // #[serde(rename = "code")]
-  // pub code: u16,
-  /// ThingSpace error code
-  #[serde(rename = "errorCode", skip_serializing_if = "Option::is_none")]
-  pub error_code: Option<String>,
-  /// ThingSpace error message
-  #[serde(rename = "errorMessage", skip_serializing_if = "Option::is_none")]
-  pub error_message: Option<String>,
+pub struct CredentialError {
   /// ThingSpace error description
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub error_description: Option<String>,
+  pub error_description: String,
   /// ThingSpace Error reason
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub error: Option<String>,
+  pub error: String,
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ThingSpaceError {
+  /// ThingSpace error code
+  #[serde(rename = "errorCode")]
+  pub error_code: String,
+  /// ThingSpace error message
+  #[serde(rename = "errorMessage")]
+  pub error_message: String,
 }
 
 #[derive(Debug)]
@@ -31,6 +30,7 @@ pub enum Error {
   #[cfg(feature = "worker")]
   Worker(worker::Error),
   Serde(serde_json::Error),
+  Credential(CredentialError),
   ThingSpace(ThingSpaceError),
   UTF8(std::str::Utf8Error),
 }
@@ -47,27 +47,13 @@ impl fmt::Display for Error {
       #[cfg(feature = "worker")]
       Error::Worker(e) => ("WorkerError", e.to_string()),
       Error::Serde(e) => ("SerdeError", e.to_string()),
+      Error::Credential(e) => (
+        "CredentialError",
+        format!("\"{}\": \"{}\"", &e.error, &e.error_description),
+      ),
       Error::ThingSpace(e) => (
         "ThingSpaceError",
-        format!(
-          "\"{}\": \"{}\",\"{}\": \"{}\"",
-          match &e.error {
-            Some(m) => m,
-            None => &String::new(),
-          },
-          match &e.error_description {
-            Some(m) => m,
-            None => &String::new(),
-          },
-          match &e.error_code {
-            Some(m) => m,
-            None => &String::new(),
-          },
-          match &e.error_message {
-            Some(m) => m,
-            None => &String::new(),
-          },
-        ),
+        format!("\"{}\": \"{}\"", &e.error_code, &e.error_message),
       ),
       Error::UTF8(e) => ("Utf8Error", e.to_string()),
     };
@@ -87,6 +73,7 @@ impl error::Error for Error {
       #[cfg(feature = "worker")]
       Error::Worker(e) => e,
       Error::Serde(e) => e,
+      Error::Credential(_) => return None,
       Error::ThingSpace(_) => return None,
       Error::UTF8(e) => e,
     })
@@ -130,6 +117,12 @@ impl From<std::str::Utf8Error> for Error {
 impl From<worker::Error> for Error {
   fn from(e: worker::Error) -> Self {
     Error::Worker(e)
+  }
+}
+
+impl From<CredentialError> for Error {
+  fn from(e: CredentialError) -> Self {
+    Error::Credential(e)
   }
 }
 

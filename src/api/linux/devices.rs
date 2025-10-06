@@ -37,13 +37,13 @@ use const_format::concatcp;
 /// }
 /// ```
 pub fn devices_list<'a>(
-  secrets: &Secrets,
+  account_name: &'a str,
   access_token: &'a str,
   session_token: &'a str,
   request: &'a mut AccountDeviceListRequest,
   response: &'a mut AccountDeviceListResponse,
 ) -> Result<&'a AccountDeviceListResponse, Box<dyn std::error::Error>> {
-  request.account_name.clone_from(&secrets.account_name);
+  request.account_name.clone_from(account_name);
 
   *response = ureq::post(concatcp!(M2M_REST_API_V1, "/devices/actions/list"))
     .header("Accept", "application/json")

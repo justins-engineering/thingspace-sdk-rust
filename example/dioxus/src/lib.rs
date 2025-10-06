@@ -2,31 +2,32 @@ use dioxus::prelude::*;
 pub mod api;
 
 #[cfg(feature = "api")]
-use thingspace_sdk::models::{LoginResponse, Session};
+use thingspace_sdk::models::{CallbackListener, Device};
+// use thingspace_sdk::models::{CallbackListener, LoginResponse, Session};
 
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 
 #[cfg(feature = "api")]
 #[derive(Clone, Copy, Debug)]
 struct LocalSession {
-  access_token: Signal<LoginResponse>,
-  session_token: Signal<Session>,
+  listeners: Signal<Vec<CallbackListener>>,
+  devices: Signal<Vec<Device>>,
 }
+
+// #[cfg(feature = "api")]
+// #[derive(Clone, Copy, Debug)]
+// struct LocalSession {
+//   access_token: Signal<LoginResponse>,
+//   session_token: Signal<Session>,
+//   listeners: Signal<Vec<CallbackListener>>,
+// }
 
 #[cfg(feature = "api")]
 #[component]
 pub fn App() -> Element {
   use_context_provider(|| LocalSession {
-    access_token: Signal::new(LoginResponse {
-      access_token: "".to_string(),
-      expires_in: 0,
-      scope: "".to_string(),
-      token_type: "Bearer".to_string(),
-    }),
-    session_token: Signal::new(Session {
-      session_token: "".to_string(),
-      expires_in: 0,
-    }),
+    listeners: Signal::new(vec![CallbackListener::default()]),
+    devices: Signal::new(vec![Device::default()]),
   });
 
   rsx! {
@@ -36,6 +37,34 @@ pub fn App() -> Element {
     Index {}
   }
 }
+
+// #[cfg(feature = "api")]
+// #[component]
+// pub fn App() -> Element {
+//   use_context_provider(|| LocalSession {
+//     access_token: Signal::new(LoginResponse {
+//       access_token: "".to_string(),
+//       expires_in: 0,
+//       scope: "".to_string(),
+//       token_type: "Bearer".to_string(),
+//     }),
+//     session_token: Signal::new(Session {
+//       session_token: "".to_string(),
+//       expires_in: 0,
+//     }),
+//     listeners: Signal::new(vec![CallbackListener {
+//       account_name: Some(String::with_capacity(16)),
+//       ..Default::default()
+//     }]),
+//   });
+
+//   rsx! {
+//     document::Link { rel: "stylesheet", href: MAIN_CSS }
+//     document::Link { rel: "icon", href: asset!("/assets/images/favicon.ico") }
+
+//     Index {}
+//   }
+// }
 
 #[cfg(feature = "browser")]
 #[component]
@@ -59,24 +88,45 @@ pub fn Index() -> Element {
 #[cfg(feature = "api")]
 #[component]
 pub fn Index() -> Element {
-  let _ = use_resource(move || async move { api::login().await });
+  // let _ = use_resource(move || async move {
+  //   api::callback_list().await;
+  // });
+  let _ = use_resource(move || async move {
+    api::callback_list().await;
+    api::device_list().await;
+  });
 
-  let access = use_context::<crate::LocalSession>().access_token;
-  let session = use_context::<crate::LocalSession>().session_token;
   rsx! {
     div { class: "flex flex-col justify-around h-full w-full lg:w-9/10",
-      div { class: "card w-full bg-neutral text-neutral-content card-lg shadow-sm",
-        div { class: "card-body",
-          h2 { class: "card-title", "VZW Access Token" }
-          code { class: "whitespace-pre-line break-all", "{access}" }
+      div {
+        ul { class: "list list-disc list-inside whitespace-pre-line break-all",
+          for i in use_context::<crate::LocalSession>().listeners.iter() {
+            li { "{i}" }
+          }
         }
       }
-      div { class: "card w-full bg-neutral text-neutral-content card-lg shadow-sm",
-        div { class: "card-body",
-          h2 { class: "card-title", "VZW Session Token" }
-          code { class: "whitespace-pre-line break-all", "{session}" }
+      div {
+        ul { class: "list list-disc list-inside whitespace-pre-line break-all",
+          for i in use_context::<crate::LocalSession>().devices.iter() {
+            li { "{i:#?}" }
+          }
         }
       }
     }
   }
 }
+
+// let access = use_context::<crate::LocalSession>().access_token;
+// let session = use_context::<crate::LocalSession>().session_token;
+// div { class: "card w-full bg-neutral text-neutral-content card-lg shadow-sm",
+//   div { class: "card-body",
+//     h2 { class: "card-title", "VZW Access Token" }
+//     code { class: "whitespace-pre-line break-all", "{access}" }
+//   }
+// }
+// div { class: "card w-full bg-neutral text-neutral-content card-lg shadow-sm",
+//   div { class: "card-body",
+//     h2 { class: "card-title", "VZW Session Token" }
+//     code { class: "whitespace-pre-line break-all", "{session}" }
+//   }
+// }

@@ -4,7 +4,7 @@ use worker::{
 };
 
 use thingspace_sdk::api::{get_access_token, get_session_token};
-use thingspace_sdk::models::{LoginResponse, Secrets, Session, SessionRequestBody};
+use thingspace_sdk::models::{LoginResponse, Session, SessionRequestBody};
 
 #[derive(Deserialize, Serialize, Debug)]
 struct Access {
@@ -34,22 +34,10 @@ pub async fn access_token(req: Request, ctx: RouteContext<()>) -> worker::Result
     }
   };
 
-  let env = ctx.env;
-  let public_key = env.var("PUBLIC_KEY")?;
-  let private_key = env.var("PRIVATE_KEY")?;
-  let username: Secret = env.var("USERNAME")?;
-  let password = env.var("PASSWORD")?;
-  let account_name = env.var("ACCOUNT_NAME")?;
+  let public_key = ctx.var("PUBLIC_KEY")?;
+  let private_key = ctx.var("PRIVATE_KEY")?;
 
-  let secrets = Secrets {
-    public_key: public_key.to_string(),
-    private_key: private_key.to_string(),
-    username: username.to_string(),
-    password: password.to_string(),
-    account_name: account_name.to_string(),
-  };
-
-  let vz_req = get_access_token(secrets).await;
+  let vz_req = get_access_token(&public_key.to_string(), &private_key.to_string()).await;
 
   match vz_req {
     Ok(mut resp) => match resp.json::<LoginResponse>().await {
@@ -101,7 +89,7 @@ pub async fn session_token(req: Request, ctx: RouteContext<()>) -> worker::Resul
             password: password.to_string(),
           };
 
-          let vz_req = get_session_token(cred, &ac.access_token).await;
+          let vz_req = get_session_token(&cred, &ac.access_token).await;
 
           match vz_req {
             // Ok(resp) => Ok(resp),

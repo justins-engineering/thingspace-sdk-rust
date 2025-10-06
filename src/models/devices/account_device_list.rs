@@ -3,12 +3,13 @@ use iso8601::DateTime;
 use serde::{Deserialize, Serialize};
 
 /// A struct containing an Account Device List Request.
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct AccountDeviceListRequest {
+  #[serde(skip_serializing_if = "Option::is_none")]
   /// The billing account for which a list of devices is returned.
   /// If you don't specify an accountName, the list includes all devices to which you have access.
-  pub account_name: String,
+  pub account_name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   /// [`DeviceID`]: An identifier for a single device.
   pub device_id: Option<DeviceID>,
@@ -36,21 +37,21 @@ pub struct AccountDeviceListRequest {
   pub largest_device_id_seen: Option<i32>,
 }
 
-impl Default for AccountDeviceListRequest {
-  fn default() -> AccountDeviceListRequest {
-    AccountDeviceListRequest {
-      account_name: String::with_capacity(32),
-      device_id: Option::default(),
-      filter: Option::default(),
-      current_state: Option::default(),
-      earliest: Option::default(),
-      latest: Option::default(),
-      service_plan: Option::default(),
-      max_number_of_devices: Option::default(),
-      largest_device_id_seen: Option::default(),
-    }
-  }
-}
+// impl Default for AccountDeviceListRequest {
+//   fn default() -> AccountDeviceListRequest {
+//     AccountDeviceListRequest {
+//       account_name: Option::default(),
+//       device_id: Option::default(),
+//       filter: Option::default(),
+//       current_state: Option::default(),
+//       earliest: Option::default(),
+//       latest: Option::default(),
+//       service_plan: Option::default(),
+//       max_number_of_devices: Option::default(),
+//       largest_device_id_seen: Option::default(),
+//     }
+//   }
+// }
 
 /// A struct containing an Account Device List Result.
 #[derive(Debug, Deserialize, Serialize)]

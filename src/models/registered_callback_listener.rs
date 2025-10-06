@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// A struct containing a registered callback listener.
 #[derive(Debug, Deserialize, Serialize)]
@@ -32,7 +33,27 @@ impl Default for CallbackListener {
   }
 }
 
-/// A struct containing an Account Device List Result.
+impl fmt::Display for CallbackListener {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let e = match &self.account_name {
+      Some(n) => {
+        format!(
+          "\"account_name\": \"{}\",\n\"service_name\": \"{}\",\n\"url\": \"{}\",\n",
+          n, self.service_name, self.url
+        )
+      }
+      None => {
+        format!(
+          "\"service_name\": \"{}\",\n\"url\": \"{}\",\n",
+          self.service_name, self.url
+        )
+      }
+    };
+    write!(f, "{{ \"CallbackListener\": {{ {e} }} }}")
+  }
+}
+
+/// A struct containing an Account Callback Listener Response.
 #[derive(Debug, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct CallbackListenerResponse {

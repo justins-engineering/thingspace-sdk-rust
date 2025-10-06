@@ -10,7 +10,7 @@ pub struct ExtendedAttribute {
   /// Extended Attribute key
   pub key: String,
   /// Extended Attribute value, usually empty
-  /// #[serde(skip_serializing_if = "Option::is_none")]
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub value: Option<String>,
 }
 

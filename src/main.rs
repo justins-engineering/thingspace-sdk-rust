@@ -7,7 +7,7 @@ use thingspace_sdk::api::{
 #[cfg(feature = "ureq")]
 use thingspace_sdk::models::{
   AccountDeviceListRequest, AccountDeviceListResponse, CallbackListener, CallbackListenerResponse,
-  LoginResponse, Secrets, Session,
+  LoginResponse, Secrets, Session, SessionRequestBody,
 };
 
 #[cfg(feature = "ureq")]
@@ -48,7 +48,8 @@ fn main() {}
 fn get_credentials(secrets: &Secrets, cred: &mut Credentials) {
   let mut login = LoginResponse::default();
 
-  match thingspace_sdk::api::get_access_token(secrets, &mut login) {
+  match thingspace_sdk::api::get_access_token(&secrets.public_key, &secrets.private_key, &mut login)
+  {
     Ok(response) => {
       println!(
         "Access token: {}, Scope: {}, TokenType: {}, Expires in: {}",
@@ -63,7 +64,12 @@ fn get_credentials(secrets: &Secrets, cred: &mut Credentials) {
 
   let mut session = Session::default();
 
-  match thingspace_sdk::api::get_session_token(secrets, &login.access_token, &mut session) {
+  let user_info = SessionRequestBody {
+    username: secrets.username.clone(),
+    password: secrets.password.clone(),
+  };
+
+  match thingspace_sdk::api::get_session_token(&user_info, &login.access_token, &mut session) {
     Ok(response) => {
       println!(
         "Session token: {}, Expires in: {}",

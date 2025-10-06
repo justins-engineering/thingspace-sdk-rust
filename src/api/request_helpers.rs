@@ -17,22 +17,23 @@ pub fn oauth_field(access_token: &str) -> String {
 }
 
 pub fn encode_login_field<'a>(
-  secrets: &'a crate::models::Secrets,
+  public_key: &'a str,
+  private_key: &'a str,
   dst: &'a mut [u8],
 ) -> Result<&'a [u8], Box<dyn std::error::Error>> {
   let mut login_buf = [0u8; LOGIN_BUF_SIZE];
   assert!(
-    secrets.public_key.len() + secrets.private_key.len() + 2 <= LOGIN_BUF_SIZE,
+    public_key.len() + private_key.len() + 2 <= LOGIN_BUF_SIZE,
     "LOGIN_BUF_SIZE is too small!"
   );
 
-  let dec_len = secrets.public_key.len() + secrets.private_key.len();
+  let dec_len = public_key.len() + private_key.len();
 
-  let (key, value) = login_buf.split_at_mut(secrets.public_key.len());
-  key.copy_from_slice(secrets.public_key.as_bytes());
+  let (key, value) = login_buf.split_at_mut(public_key.len());
+  key.copy_from_slice(public_key.as_bytes());
   value[0] = b':';
-  let value = &mut value[1..=secrets.private_key.len()];
-  value.copy_from_slice(secrets.private_key.as_bytes());
+  let value = &mut value[1..=private_key.len()];
+  value.copy_from_slice(private_key.as_bytes());
 
   assert!(
     <base64ct::Base64 as base64ct::Encoding>::encoded_len(&login_buf[..=dec_len])

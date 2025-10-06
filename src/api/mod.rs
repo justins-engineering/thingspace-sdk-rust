@@ -14,6 +14,18 @@ pub use worker::get_access_token;
 #[cfg(feature = "worker")]
 pub use worker::get_session_token;
 
+#[cfg(feature = "worker")]
+/// Functions for use with "Registered Callbacks Listeners" API endpoints
+pub use worker::deregister_callback_listener;
+#[cfg(feature = "worker")]
+pub use worker::list_callback_listeners;
+#[cfg(feature = "worker")]
+pub use worker::register_callback_listener;
+
+#[cfg(feature = "worker")]
+/// Functions for use with "Device Management" API endpoints, primarily `/devices/actions/list`
+pub use worker::devices_list;
+
 #[cfg(feature = "ureq")]
 mod linux;
 #[cfg(feature = "ureq")]

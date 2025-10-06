@@ -1,7 +1,7 @@
 use crate::api::request_helpers::{
   BASE64_BUF_SIZE, LOGIN_URL, M2M_REST_API_V1, encode_login_field, oauth_field,
 };
-use crate::models::{LoginResponse, Secrets, Session, SessionRequestBody};
+use crate::models::{LoginResponse, Session, SessionRequestBody};
 use const_format::concatcp;
 
 /// Makes an API request for an OAuth2 access token and returns a [`LoginResponse`].
@@ -46,11 +46,13 @@ use const_format::concatcp;
 /// }
 /// ```
 pub fn get_access_token<'a>(
-  secrets: &'a Secrets,
+  public_key: &'a str,
+  private_key: &'a str,
   response: &'a mut LoginResponse,
 ) -> Result<&'a LoginResponse, Box<dyn std::error::Error>> {
   let mut enc_buf = [0u8; BASE64_BUF_SIZE];
-  let auth = encode_login_field(secrets, &mut enc_buf).expect("Failed to encode login field");
+  let auth = encode_login_field(public_key, private_key, &mut enc_buf)
+    .expect("Failed to encode login field");
   let auth = std::str::from_utf8(auth)?.trim_end_matches('\0');
 
   *response = ureq::post(LOGIN_URL)
@@ -93,20 +95,15 @@ pub fn get_access_token<'a>(
 /// }
 /// ```
 pub fn get_session_token<'a>(
-  secrets: &'a Secrets,
+  cred: &'a SessionRequestBody,
   access_token: &'a str,
   response: &'a mut Session,
 ) -> Result<&'a Session, Box<dyn std::error::Error>> {
-  let request: SessionRequestBody = SessionRequestBody {
-    username: secrets.username.clone(),
-    password: secrets.password.clone(),
-  };
-
   *response = ureq::post(concatcp!(M2M_REST_API_V1, "/session/login"))
     .header("Accept", "application/json")
     .header("Content-Type", "application/json")
     .header("Authorization", oauth_field(access_token))
-    .send_json(&request)?
+    .send_json(cred)?
     .body_mut()
     .read_json::<Session>()?;
 

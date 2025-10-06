@@ -8,7 +8,7 @@ use web_sys::{Request, RequestCredentials, RequestInit, RequestMode, Response};
 use crate::api::request_helpers::{
   BASE64_BUF_SIZE, LOGIN_URL, M2M_REST_API_V1, encode_login_field, oauth_field,
 };
-use crate::models::{LoginResponse, Secrets, Session, SessionRequestBody};
+use crate::models::{LoginResponse, Session, SessionRequestBody};
 use const_format::concatcp;
 
 /// When debugging your Worker via `wrangler dev`, `wrangler tail`, or from the Workers Dashboard,
@@ -83,9 +83,10 @@ impl Default for RequestHeaders {
 /// # Errors
 /// Returns HTTP response code or `thingspace_sdk::Error`.
 #[cfg(feature = "wasm")]
-pub async fn get_access_token(secrets: Secrets) -> Result<LoginResponse, Error> {
+pub async fn get_access_token(public_key: &str, private_key: &str) -> Result<LoginResponse, Error> {
   let mut enc_buf = [0u8; BASE64_BUF_SIZE];
-  let auth = encode_login_field(&secrets, &mut enc_buf).expect("Failed to encode login field");
+  let auth = encode_login_field(public_key, private_key, &mut enc_buf)
+    .expect("Failed to encode login field");
   let auth = std::str::from_utf8(auth)?.trim_end_matches('\0');
 
   let headers = RequestHeaders {
@@ -151,11 +152,11 @@ pub async fn get_access_token(secrets: Secrets) -> Result<LoginResponse, Error> 
 /// # Errors
 /// Returns HTTP response code or `thingspace_sdk::Error`.
 #[cfg(feature = "wasm")]
-pub async fn get_session_token(secrets: Secrets, access_token: &str) -> Result<Session, Error> {
-  let request: SessionRequestBody = SessionRequestBody {
-    username: secrets.username.clone(),
-    password: secrets.password.clone(),
-  };
+pub async fn get_session_token(
+  cred: &SessionRequestBody,
+  access_token: &str,
+) -> Result<Session, Error> {
+  let cred = serde_json::to_string(&cred)?;
 
   let headers = RequestHeaders {
     accept: "application/json".to_string(),
@@ -171,7 +172,7 @@ pub async fn get_session_token(secrets: Secrets, access_token: &str) -> Result<S
   request_init.set_credentials(RequestCredentials::SameOrigin);
 
   request_init.set_headers(&headers);
-  request_init.set_body(&serde_wasm_bindgen::to_value(&request)?);
+  request_init.set_body(&serde_wasm_bindgen::to_value(&cred)?);
 
   let request =
     Request::new_with_str_and_init(concatcp!(M2M_REST_API_V1, "/session/login"), &request_init)?;

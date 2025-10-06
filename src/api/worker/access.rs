@@ -1,12 +1,10 @@
 use const_format::concatcp;
-use std::str;
-use wasm_bindgen::prelude::*;
-use worker::{Fetch, Headers, Method, Request, RequestInit, Response, console_error, wasm_bindgen};
+use worker::{Fetch, Headers, Method, Request, RequestInit, Response, console_error};
 
 use crate::api::request_helpers::{
   BASE64_BUF_SIZE, LOGIN_URL, M2M_REST_API_V1, encode_login_field, oauth_field,
 };
-use crate::models::{Error, Secrets, SessionRequestBody};
+use crate::models::{Error, SessionRequestBody};
 
 use serde::{Deserialize, Serialize};
 
@@ -49,9 +47,13 @@ impl Default for RequestHeaders {
 ///
 /// # Errors
 /// Returns HTTP response code or `thingspace_sdk::Error`.
-pub async fn get_access_token(secrets: Secrets) -> std::result::Result<Response, Error> {
+pub async fn get_access_token(
+  public_key: &str,
+  private_key: &str,
+) -> std::result::Result<Response, Error> {
   let mut enc_buf = [0u8; BASE64_BUF_SIZE];
-  let auth = encode_login_field(&secrets, &mut enc_buf).expect("Failed to encode login field");
+  let auth = encode_login_field(public_key, private_key, &mut enc_buf)
+    .expect("Failed to encode login field");
   let auth = std::str::from_utf8(auth)?.trim_end_matches('\0');
 
   let headers = Headers::new();
@@ -65,7 +67,9 @@ pub async fn get_access_token(secrets: Secrets) -> std::result::Result<Response,
   // request_init.set_credentials(RequestCredentials::Include);
 
   request_init.with_headers(headers);
-  request_init.with_body(Some(JsValue::from_str("grant_type=client_credentials")));
+  request_init.with_body(Some(wasm_bindgen::JsValue::from_str(
+    "grant_type=client_credentials",
+  )));
 
   let request = Request::new_with_init(LOGIN_URL, &request_init)?;
 
@@ -89,7 +93,7 @@ pub async fn get_access_token(secrets: Secrets) -> std::result::Result<Response,
 /// # Errors
 /// Returns HTTP response code or `thingspace_sdk::Error`.
 pub async fn get_session_token(
-  cred: SessionRequestBody,
+  cred: &SessionRequestBody,
   access_token: &str,
 ) -> std::result::Result<Response, Error> {
   let headers = Headers::new();
