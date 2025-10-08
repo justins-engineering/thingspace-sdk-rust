@@ -1,19 +1,20 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SessionRequestBody {
   pub username: String,
   pub password: String,
 }
 
 /// A struct containing a session access and it's TTL.
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Session {
   /// The session token.
   pub session_token: String,
   /// The session token TTL.
-  /// "The token will remain valid as long as your application continues to use it, but it will expire after 20 minutes of inactivity."
+  /// The token will remain valid as long as your application continues to use it,
+  /// but it will expire after 20 minutes of inactivity.
   pub expires_in: i32,
 }
 

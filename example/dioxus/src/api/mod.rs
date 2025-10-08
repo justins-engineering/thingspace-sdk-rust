@@ -1,6 +1,12 @@
-mod vzw;
-// pub use vzw::fetch_access_token;
-// pub use vzw::fetch_session_token;
-pub use vzw::callback_list;
-pub use vzw::device_list;
-// pub use vzw::login;
+#[cfg(feature = "browser")]
+mod auth;
+#[cfg(feature = "browser")]
+pub use auth::login;
+
+mod device;
+pub use device::device_list;
+
+mod callback_listener;
+pub use callback_listener::create_listener;
+pub use callback_listener::delete_listener;
+pub use callback_listener::listener_list;

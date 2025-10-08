@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 /// Any extended attributes for the device, as Key and Value pairs.
 /// The pairs listed below are returned as part of the response for a single device,
 /// but are not included if the request was for information about multiple devices.
-#[derive(Debug, Deserialize, Clone, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct ExtendedAttribute {

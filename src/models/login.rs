@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// A struct containing the deserialized JSON returned from an OAuth2 access token API request.
-// #[derive(Deserialize, Debug, Clone)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct LoginResponse {
   /// The OAuth2 access token.
   pub access_token: String,

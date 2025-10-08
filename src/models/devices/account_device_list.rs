@@ -3,7 +3,7 @@ use iso8601::DateTime;
 use serde::{Deserialize, Serialize};
 
 /// A struct containing an Account Device List Request.
-#[derive(Deserialize, Serialize, Default)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct AccountDeviceListRequest {
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -37,24 +37,8 @@ pub struct AccountDeviceListRequest {
   pub largest_device_id_seen: Option<i32>,
 }
 
-// impl Default for AccountDeviceListRequest {
-//   fn default() -> AccountDeviceListRequest {
-//     AccountDeviceListRequest {
-//       account_name: Option::default(),
-//       device_id: Option::default(),
-//       filter: Option::default(),
-//       current_state: Option::default(),
-//       earliest: Option::default(),
-//       latest: Option::default(),
-//       service_plan: Option::default(),
-//       max_number_of_devices: Option::default(),
-//       largest_device_id_seen: Option::default(),
-//     }
-//   }
-// }
-
 /// A struct containing an Account Device List Result.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct AccountDeviceListResponse {
@@ -65,11 +49,11 @@ pub struct AccountDeviceListResponse {
   pub devices: Vec<Device>,
 }
 
-impl Default for AccountDeviceListResponse {
-  fn default() -> AccountDeviceListResponse {
-    AccountDeviceListResponse {
-      has_more_data: bool::default(),
-      devices: vec![Device::default()],
-    }
-  }
-}
+// impl Default for AccountDeviceListResponse {
+//   fn default() -> AccountDeviceListResponse {
+//     AccountDeviceListResponse {
+//       has_more_data: bool::default(),
+//       devices: vec![Device::default()],
+//     }
+//   }
+// }

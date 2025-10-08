@@ -1,5 +1,5 @@
 name = "thingspace-sdk"
-compatibility_date = "2025-10-06"
+compatibility_date = "2025-10-08"
 send_metrics = false
 # upload_source_maps = true
 main = "build/worker/shim.mjs"
@@ -19,4 +19,4 @@ enabled = true
 
 [[kv_namespaces]]
 binding = "THINGSPACE"
-id = "c009b0bea73e44db9aec38e114496717"
+id = "8e9b1c2170e779b059b00b90fe57278b"

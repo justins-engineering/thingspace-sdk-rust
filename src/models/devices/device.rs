@@ -3,7 +3,7 @@ use iso8601::DateTime;
 use serde::{Deserialize, Serialize};
 
 /// A struct containing a Device.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct Device {

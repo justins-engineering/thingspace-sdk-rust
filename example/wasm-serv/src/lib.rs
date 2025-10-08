@@ -21,8 +21,10 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 #[event(fetch)]
 async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
   Router::new()
-    .get_async("/api/callbacks", api::list_callbacks)
-    .post_async("/api/devices", api::list_devices)
+    .get_async("/api/callback_listener", api::list_listeners)
+    .post_async("/api/callback_listener", api::create_listeners)
+    .delete_async("/api/callback_listener/:name", api::delete_listeners)
+    .post_async("/api/device", api::list_devices)
     .run(req, env)
     .await
 }

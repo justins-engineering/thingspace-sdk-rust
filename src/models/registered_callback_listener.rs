@@ -2,10 +2,10 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// A struct containing a registered callback listener.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct CallbackListener {
-  #[serde(rename(serialize = "name"))]
+  #[serde(rename(serialize = "name"), alias = "name")]
   /// The name of the callback service that you want to subscribe to.
   pub service_name: String,
   /// The address on your server where you have enabled a listening service for callback messages.
@@ -54,7 +54,7 @@ impl fmt::Display for CallbackListener {
 }
 
 /// A struct containing an Account Callback Listener Response.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct CallbackListenerResponse {
   /// Account name

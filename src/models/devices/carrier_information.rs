@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// A struct containing information about the device's carrier.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct CarrierInformation {

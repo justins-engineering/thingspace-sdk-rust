@@ -20,3 +20,6 @@ pub use devices::Device;
 mod registered_callback_listener;
 pub use registered_callback_listener::CallbackListener;
 pub use registered_callback_listener::CallbackListenerResponse;
+
+mod service_name;
+pub use service_name::ServiceName;

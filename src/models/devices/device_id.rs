@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// A struct containing a Device ID type and ID.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DeviceID {
   /// Device ID
   pub id: String,
@@ -20,7 +20,7 @@ impl Default for DeviceID {
 }
 
 /// A struct containing a Device ID type and ID.
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DeviceIdSearch {
   /// The string appears anywhere in the identifer.
   pub contains: String,
