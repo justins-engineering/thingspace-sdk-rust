@@ -1,10 +1,9 @@
-use worker::{Request, Response, RouteContext, console_error};
-
 use crate::cache;
-use thingspace_sdk::{
-  api::{deregister_callback_listener, list_callback_listeners, register_callback_listener},
-  models::CallbackListener,
+use thingspace_sdk::api::{
+  deregister_callback_listener, list_callback_listeners, register_callback_listener,
 };
+use thingspace_sdk::models::CallbackListener;
+use worker::{Request, Response, RouteContext, console_error};
 
 pub async fn list_listeners(_req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
   console_error_panic_hook::set_once();
@@ -27,7 +26,7 @@ pub async fn list_listeners(_req: Request, ctx: RouteContext<()>) -> worker::Res
 pub async fn create_listeners(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
   console_error_panic_hook::set_once();
 
-  let ctype = req.headers().get("Content-Type");
+  let ctype: Result<Option<String>, worker::Error> = req.headers().get("Content-Type");
 
   let Ok(ctype) = ctype else {
     return Response::error("Missing 'Content-Type' header", 400);

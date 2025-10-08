@@ -48,12 +48,3 @@ pub struct AccountDeviceListResponse {
   /// Array of returned [`Device`] objects
   pub devices: Vec<Device>,
 }
-
-// impl Default for AccountDeviceListResponse {
-//   fn default() -> AccountDeviceListResponse {
-//     AccountDeviceListResponse {
-//       has_more_data: bool::default(),
-//       devices: vec![Device::default()],
-//     }
-//   }
-// }
