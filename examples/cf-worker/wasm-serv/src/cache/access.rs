@@ -4,8 +4,6 @@ use thingspace_sdk::api::{get_access_token, get_session_token};
 use thingspace_sdk::models::{LoginResponse, Session, SessionRequestBody};
 
 pub async fn access_token(ctx: &RouteContext<()>) -> worker::Result<String> {
-  console_error_panic_hook::set_once();
-
   let kv = ctx.kv("THINGSPACE")?;
   let access = kv.get("access_token").text().await?;
 
@@ -50,7 +48,6 @@ pub async fn access_token(ctx: &RouteContext<()>) -> worker::Result<String> {
 }
 
 pub async fn session_token(ctx: &RouteContext<()>) -> worker::Result<String> {
-  console_error_panic_hook::set_once();
   let kv = ctx.kv("THINGSPACE")?;
   let sesssion = kv.get("session_token").text().await?;
 

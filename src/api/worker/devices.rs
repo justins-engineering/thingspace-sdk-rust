@@ -16,8 +16,6 @@ use worker::{Fetch, Headers, Method, Request, RequestInit, Response, console_err
 /// use worker::{Request, Response, RouteContext, console_error};
 ///
 /// pub async fn list_devices(_req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-///   console_error_panic_hook::set_once();
-///
 ///   let atoken = cache::access_token(&ctx).await?;
 ///   let stoken = cache::session_token(&ctx).await?;
 ///   let aname = ctx.var("ACCOUNT_NAME")?;

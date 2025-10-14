@@ -12,8 +12,6 @@ struct Access {
 }
 
 pub async fn access_token(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-  console_error_panic_hook::set_once();
-
   let auth = req.headers().get("Cookie");
   console_warn!("{auth:?}");
   match auth {
@@ -71,8 +69,6 @@ pub async fn access_token(req: Request, ctx: RouteContext<()>) -> worker::Result
 }
 
 pub async fn session_token(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-  console_error_panic_hook::set_once();
-
   let head: Result<Option<String>, worker::Error> = req.headers().get("Cookie");
   match head {
     Ok(op) => {

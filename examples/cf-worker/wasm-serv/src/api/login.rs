@@ -10,8 +10,6 @@ struct Access {
 }
 
 pub async fn access_token(_req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-  console_error_panic_hook::set_once();
-
   let public_key = ctx.var("PUBLIC_KEY")?;
   let private_key = ctx.var("PRIVATE_KEY")?;
 
@@ -27,8 +25,6 @@ pub async fn access_token(_req: Request, ctx: RouteContext<()>) -> worker::Resul
 }
 
 pub async fn session_token(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-  console_error_panic_hook::set_once();
-
   let ctype = req.headers().get("Content-Type");
 
   let Ok(ctype) = ctype else {

@@ -1,5 +1,5 @@
 use crate::api::request_helpers::{M2M_REST_API_V1, SESSION_TOKEN_FIELD, oauth_field};
-use crate::models::{AccountDeviceListRequest, AccountDeviceListResponse, Secrets};
+use crate::models::{AccountDeviceListRequest, AccountDeviceListResponse, Error};
 use const_format::concatcp;
 
 /// Makes an API request for an Account Device List and returns a [`AccountDeviceListResponse`].
@@ -36,23 +36,43 @@ use const_format::concatcp;
 ///   }
 /// }
 /// ```
-pub fn devices_list<'a>(
-  account_name: &'a str,
-  access_token: &'a str,
-  session_token: &'a str,
-  request: &'a mut AccountDeviceListRequest,
-  response: &'a mut AccountDeviceListResponse,
-) -> Result<&'a AccountDeviceListResponse, Box<dyn std::error::Error>> {
-  request.account_name.clone_from(account_name);
+pub async fn devices_list(
+  account_name: &str,
+  access_token: &str,
+  session_token: &str,
+  adl: &mut AccountDeviceListRequest,
+  client: Option<reqwest::Client>,
+) -> Result<AccountDeviceListResponse, Error> {
+  adl.account_name = Some(account_name.to_string());
 
-  *response = ureq::post(concatcp!(M2M_REST_API_V1, "/devices/actions/list"))
+  let body = serde_json::to_string(adl)?;
+  let client = match client {
+    Some(c) => c,
+    None => reqwest::Client::new(),
+  };
+
+  let request = client
+    .post(concatcp!(M2M_REST_API_V1, "/devices/actions/list"))
     .header("Accept", "application/json")
     .header("Content-Type", "application/json")
     .header(SESSION_TOKEN_FIELD, session_token)
     .header("Authorization", oauth_field(access_token))
-    .send_json(request)?
-    .body_mut()
-    .read_json::<AccountDeviceListResponse>()?;
+    .body(body)
+    .send()
+    .await;
 
-  Ok(response)
+  match request {
+    Ok(response) => {
+      let status = response.status().as_u16();
+      if (400..600).contains(&status) {
+        let json = response.json().await?;
+        return Err(Error::ThingSpace(json));
+      }
+      Ok(response.json::<AccountDeviceListResponse>().await?)
+    }
+    Err(e) => {
+      println!("{e:?}");
+      Err(Error::Reqwest(e))
+    }
+  }
 }

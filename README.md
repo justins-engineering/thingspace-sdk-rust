@@ -1,2 +1,2 @@
-# thingspace-sdk-rust
-An unofficial SDK for Verizon Thingspace's API written in Rust 
+# Thingspace SDK Rust
+A unofficial SDK for interacting with the [Verizon ThingSpace](https://thingspace.verizon.com/documentation.html) Standard APIs.

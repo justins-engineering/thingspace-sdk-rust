@@ -1,30 +1,34 @@
-#[cfg(feature = "ureq")]
+use serde::{Deserialize, Serialize};
 use std::fs;
-#[cfg(feature = "ureq")]
 use thingspace_sdk::api::{
   deregister_callback_listener, devices_list, list_callback_listeners, register_callback_listener,
 };
-#[cfg(feature = "ureq")]
-use thingspace_sdk::models::{
-  AccountDeviceListRequest, AccountDeviceListResponse, CallbackListener, CallbackListenerResponse,
-  LoginResponse, Secrets, Session, SessionRequestBody,
-};
+use thingspace_sdk::models::{AccountDeviceListRequest, CallbackListener, SessionRequestBody};
 
-#[cfg(feature = "ureq")]
+/// A struct containing a user's Verizon account secrets required for API use.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(dead_code)]
+pub struct Secrets {
+  pub public_key: String,
+  pub private_key: String,
+  pub username: String,
+  pub password: String,
+  pub account_name: String,
+}
+
 fn read_secrets_from_file() -> Result<Secrets, Box<dyn std::error::Error>> {
   let file = fs::read_to_string("./secrets.toml")?;
   let secrets = toml::from_str::<Secrets>(&file)?;
   Ok(secrets)
 }
 
-#[cfg(feature = "ureq")]
 struct Credentials {
   access_token: String,
   session_token: String,
 }
 
-#[cfg(feature = "ureq")]
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
   let secrets = read_secrets_from_file().expect("Failed to read from secrets.toml");
 
   let mut credentials = Credentials {
@@ -32,23 +36,25 @@ fn main() {
     session_token: String::with_capacity(64),
   };
 
-  get_credentials(&secrets, &mut credentials);
-  get_devices(&secrets, &mut credentials);
+  let client = reqwest::Client::new();
 
-  set_callback_listener(&secrets, &mut credentials);
-  print_listeners(&secrets, &mut credentials);
-  delete_callback_listener(&secrets, &mut credentials);
-  print_listeners(&secrets, &mut credentials);
+  get_credentials(&secrets, &mut credentials, client.clone()).await;
+  get_devices(&secrets, &mut credentials, client.clone()).await;
+
+  set_callback_listener(&secrets.account_name, &mut credentials, client.clone()).await;
+  print_listeners(&secrets.account_name, &mut credentials, client.clone()).await;
+  delete_callback_listener(&secrets.account_name, &mut credentials, client.clone()).await;
+  print_listeners(&secrets.account_name, &mut credentials, client).await;
+  Ok(())
 }
 
-#[cfg(any(feature = "wasm", feature = "worker"))]
-fn main() {}
-
-#[cfg(feature = "ureq")]
-fn get_credentials(secrets: &Secrets, cred: &mut Credentials) {
-  let mut login = LoginResponse::default();
-
-  match thingspace_sdk::api::get_access_token(&secrets.public_key, &secrets.private_key, &mut login)
+async fn get_credentials(secrets: &Secrets, cred: &mut Credentials, client: reqwest::Client) {
+  match thingspace_sdk::api::get_access_token(
+    &secrets.public_key,
+    &secrets.private_key,
+    Some(client.clone()),
+  )
+  .await
   {
     Ok(response) => {
       println!(
@@ -62,14 +68,12 @@ fn get_credentials(secrets: &Secrets, cred: &mut Credentials) {
     }
   }
 
-  let mut session = Session::default();
-
   let user_info = SessionRequestBody {
     username: secrets.username.clone(),
     password: secrets.password.clone(),
   };
 
-  match thingspace_sdk::api::get_session_token(&user_info, &login.access_token, &mut session) {
+  match thingspace_sdk::api::get_session_token(&user_info, &cred.access_token, Some(client)).await {
     Ok(response) => {
       println!(
         "Session token: {}, Expires in: {}",
@@ -83,18 +87,18 @@ fn get_credentials(secrets: &Secrets, cred: &mut Credentials) {
   }
 }
 
-#[cfg(feature = "ureq")]
-fn get_devices(secrets: &Secrets, cred: &mut Credentials) {
+async fn get_devices(secrets: &Secrets, cred: &mut Credentials, client: reqwest::Client) {
   let mut device_request = AccountDeviceListRequest::default();
-  let mut device_result = AccountDeviceListResponse::default();
 
   match devices_list(
-    secrets,
+    &secrets.account_name,
     &cred.access_token,
     &cred.session_token,
     &mut device_request,
-    &mut device_result,
-  ) {
+    Some(client),
+  )
+  .await
+  {
     Ok(response) => {
       println!("{:#?}", response.devices[0]);
     }
@@ -104,24 +108,23 @@ fn get_devices(secrets: &Secrets, cred: &mut Credentials) {
   }
 }
 
-#[cfg(feature = "ureq")]
-fn set_callback_listener(secrets: &Secrets, cred: &mut Credentials) {
-  let mut rcl = CallbackListener {
+async fn set_callback_listener(aname: &str, cred: &mut Credentials, client: reqwest::Client) {
+  let rcl = CallbackListener {
     service_name: "CarrierService".to_string(),
     url: "https://mock.thingspace.verizon.com/webhook".to_string(),
     ..Default::default()
   };
 
-  let mut response = CallbackListenerResponse::default();
-
   match register_callback_listener(
-    secrets,
+    aname,
     &cred.access_token,
     &cred.session_token,
-    &mut rcl,
-    &mut response,
-  ) {
-    Ok(_) => {
+    &rcl,
+    Some(client),
+  )
+  .await
+  {
+    Ok(response) => {
       println!(
         "Account: {}\nService: {}",
         response.account_name, response.service_name,
@@ -133,20 +136,19 @@ fn set_callback_listener(secrets: &Secrets, cred: &mut Credentials) {
   }
 }
 
-#[cfg(feature = "ureq")]
-fn delete_callback_listener(secrets: &Secrets, cred: &mut Credentials) {
+async fn delete_callback_listener(aname: &str, cred: &mut Credentials, client: reqwest::Client) {
   let service_name = "CarrierService".to_string();
 
-  let mut response = CallbackListenerResponse::default();
-
   match deregister_callback_listener(
-    secrets,
+    aname,
     &cred.access_token,
     &cred.session_token,
     &service_name,
-    &mut response,
-  ) {
-    Ok(_) => {
+    Some(client),
+  )
+  .await
+  {
+    Ok(response) => {
       println!(
         "Account: {}\nService: {}",
         response.account_name, response.service_name,
@@ -158,15 +160,10 @@ fn delete_callback_listener(secrets: &Secrets, cred: &mut Credentials) {
   }
 }
 
-#[cfg(feature = "ureq")]
-fn print_listeners(secrets: &Secrets, cred: &mut Credentials) {
-  let mut rcls = vec![CallbackListener {
-    account_name: Some(String::with_capacity(16)),
-    ..Default::default()
-  }];
-
-  match list_callback_listeners(secrets, &cred.access_token, &cred.session_token, &mut rcls) {
-    Ok(_) => {
+async fn print_listeners(aname: &str, cred: &mut Credentials, client: reqwest::Client) {
+  match list_callback_listeners(aname, &cred.access_token, &cred.session_token, Some(client)).await
+  {
+    Ok(rcls) => {
       for rcl in rcls {
         println!(
           "Account-name: {}\nService: {}\nurl: {}",

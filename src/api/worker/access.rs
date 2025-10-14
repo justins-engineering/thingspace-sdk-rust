@@ -6,28 +6,6 @@ use crate::api::request_helpers::{
 };
 use crate::models::{Error, SessionRequestBody};
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Debug)]
-struct RequestHeaders {
-  #[serde(rename(serialize = "Accept"))]
-  accept: String,
-  #[serde(rename(serialize = "Content-Type"))]
-  content_type: String,
-  #[serde(rename(serialize = "Authorization"))]
-  authorization: String,
-}
-
-impl Default for RequestHeaders {
-  fn default() -> RequestHeaders {
-    RequestHeaders {
-      accept: "application/json".to_string(),
-      content_type: "application/x-www-form-urlencoded".to_string(),
-      authorization: String::with_capacity(64),
-    }
-  }
-}
-
 /// Makes an API request for an OAuth2 access token and returns a [`LoginResponse`].
 /// # Panics
 /// The [OAuth2 access token request](https://thingspace.verizon.com/documentation/api-documentation.html#/http/quick-start/credentials-and-tokens/obtaining-an-access_token)

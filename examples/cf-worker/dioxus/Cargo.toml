@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 wasm-opt = ["--enable-bulk-memory"]
 
 [dependencies]
-thingspace-sdk = { path = "../../", default-features = false, features = [
+thingspace-sdk = { path = "../../../", default-features = false, features = [
   "worker",
 ] }
 dioxus = { version = "0.6.0" }

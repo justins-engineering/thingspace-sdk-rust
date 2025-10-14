@@ -26,20 +26,20 @@ pub use worker::register_callback_listener;
 /// Functions for use with "Device Management" API endpoints, primarily `/devices/actions/list`
 pub use worker::devices_list;
 
-#[cfg(feature = "ureq")]
-mod linux;
-#[cfg(feature = "ureq")]
+#[cfg(feature = "reqwest")]
+mod native;
+#[cfg(feature = "reqwest")]
 /// Functions for use with "Device Management" API endpoints, primarily `/devices/actions/list`
-pub use linux::devices_list;
-#[cfg(feature = "ureq")]
-pub use linux::get_access_token;
-#[cfg(feature = "ureq")]
-pub use linux::get_session_token;
+pub use native::devices_list;
+#[cfg(feature = "reqwest")]
+pub use native::get_access_token;
+#[cfg(feature = "reqwest")]
+pub use native::get_session_token;
 
-#[cfg(feature = "ureq")]
+#[cfg(feature = "reqwest")]
 /// Functions for use with "Registered Callbacks Listeners" API endpoints
-pub use linux::deregister_callback_listener;
-#[cfg(feature = "ureq")]
-pub use linux::list_callback_listeners;
-#[cfg(feature = "ureq")]
-pub use linux::register_callback_listener;
+pub use native::deregister_callback_listener;
+#[cfg(feature = "reqwest")]
+pub use native::list_callback_listeners;
+#[cfg(feature = "reqwest")]
+pub use native::register_callback_listener;

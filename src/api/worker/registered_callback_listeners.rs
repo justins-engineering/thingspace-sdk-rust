@@ -16,8 +16,6 @@ use worker::{Fetch, Headers, Method, Request, RequestInit, Response, console_err
 /// use worker::{Request, Response, RouteContext, console_error};
 ///
 /// pub async fn create_listeners(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-///   console_error_panic_hook::set_once();
-///
 ///   let ctype: Result<Option<String>, worker::Error> = req.headers().get("Content-Type");
 ///
 ///   let Ok(ctype) = ctype else {
@@ -111,8 +109,6 @@ pub async fn register_callback_listener(
 /// use worker::{Request, Response, RouteContext, console_error};
 ///
 /// pub async fn delete_listeners(_req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-///   console_error_panic_hook::set_once();
-///
 ///   if let Some(sname) = ctx.param("name") {
 ///     let aname = ctx.var("ACCOUNT_NAME")?;
 ///     let atoken = cache::access_token(&ctx).await?;
@@ -185,8 +181,6 @@ pub async fn deregister_callback_listener(
 /// use worker::{Request, Response, RouteContext, console_error};
 ///
 /// pub async fn list_listeners(_req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
-///   console_error_panic_hook::set_once();
-///
 ///   let aname = ctx.var("ACCOUNT_NAME")?;
 ///   let atoken = cache::access_token(&ctx).await?;
 ///   let stoken = cache::session_token(&ctx).await?;

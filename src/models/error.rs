@@ -29,6 +29,8 @@ pub enum Error {
   SerdeWasm(serde_wasm_bindgen::Error),
   #[cfg(feature = "worker")]
   Worker(worker::Error),
+  #[cfg(feature = "reqwest")]
+  Reqwest(reqwest::Error),
   Serde(serde_json::Error),
   Credential(CredentialError),
   ThingSpace(ThingSpaceError),
@@ -46,6 +48,8 @@ impl fmt::Display for Error {
       Error::SerdeWasm(e) => ("SerdeWasmBindgenError", e.to_string()),
       #[cfg(feature = "worker")]
       Error::Worker(e) => ("WorkerError", e.to_string()),
+      #[cfg(feature = "reqwest")]
+      Error::Reqwest(e) => ("ReqwestError", e.to_string()),
       Error::Serde(e) => ("SerdeError", e.to_string()),
       Error::Credential(e) => (
         "CredentialError",
@@ -72,6 +76,8 @@ impl error::Error for Error {
       Error::SerdeWasm(e) => e,
       #[cfg(feature = "worker")]
       Error::Worker(e) => e,
+      #[cfg(feature = "reqwest")]
+      Error::Reqwest(e) => e,
       Error::Serde(e) => e,
       Error::Credential(_) => return None,
       Error::ThingSpace(_) => return None,
@@ -117,6 +123,13 @@ impl From<std::str::Utf8Error> for Error {
 impl From<worker::Error> for Error {
   fn from(e: worker::Error) -> Self {
     Error::Worker(e)
+  }
+}
+
+#[cfg(feature = "reqwest")]
+impl From<reqwest::Error> for Error {
+  fn from(e: reqwest::Error) -> Self {
+    Error::Reqwest(e)
   }
 }
 

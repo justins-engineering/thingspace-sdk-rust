@@ -5,9 +5,6 @@ pub use error::ThingSpaceError;
 mod login;
 pub use login::LoginResponse;
 
-mod secrets;
-pub use secrets::Secrets;
-
 mod session;
 pub use session::Session;
 pub use session::SessionRequestBody;

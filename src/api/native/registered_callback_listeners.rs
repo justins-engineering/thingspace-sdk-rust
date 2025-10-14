@@ -1,5 +1,5 @@
 use crate::api::request_helpers::{M2M_REST_API_V1, SESSION_TOKEN_FIELD, oauth_field};
-use crate::models::{CallbackListener, CallbackListenerResponse, Secrets};
+use crate::models::{CallbackListener, CallbackListenerResponse, Error};
 use const_format::concatcp;
 
 /// Registers a given URL as a callback listener for the given [`CallbackListener::service_name`] and account.
@@ -40,27 +40,47 @@ use const_format::concatcp;
 ///   }
 /// }
 /// ```
-pub fn register_callback_listener<'a>(
-  account_name: &'a str,
-  access_token: &'a str,
-  session_token: &'a str,
-  request: &'a mut CallbackListener,
-  response: &'a mut CallbackListenerResponse,
-) -> Result<&'a CallbackListenerResponse, Box<dyn std::error::Error>> {
+pub async fn register_callback_listener(
+  account_name: &str,
+  access_token: &str,
+  session_token: &str,
+  cbl: &CallbackListener,
+  client: Option<reqwest::Client>,
+) -> Result<CallbackListenerResponse, Error> {
+  let body = serde_json::to_string(cbl)?;
+  let client = match client {
+    Some(c) => c,
+    None => reqwest::Client::new(),
+  };
+
   let mut url = String::with_capacity(80);
   url.push_str(concatcp!(M2M_REST_API_V1, "/callbacks/"));
   url.push_str(account_name);
 
-  *response = ureq::post(url)
+  let request = client
+    .post(url)
     .header("Accept", "application/json")
     .header("Content-Type", "application/json")
-    .header("Authorization", oauth_field(access_token))
     .header(SESSION_TOKEN_FIELD, session_token)
-    .send_json(request)?
-    .body_mut()
-    .read_json::<CallbackListenerResponse>()?;
+    .header("Authorization", oauth_field(access_token))
+    .body(body)
+    .send()
+    .await;
 
-  Ok(response)
+  match request {
+    Ok(response) => {
+      let status = response.status().as_u16();
+      if (400..600).contains(&status) {
+        let json = response.json().await?;
+        return Err(Error::ThingSpace(json));
+      }
+      Ok(response.json::<CallbackListenerResponse>().await?)
+    }
+    Err(e) => {
+      println!("{e:?}");
+      Err(Error::Reqwest(e))
+    }
+  }
 }
 
 /// Removes a registered callback listener for the given [`CallbackListener::service_name`] and account.
@@ -97,29 +117,58 @@ pub fn register_callback_listener<'a>(
 ///   }
 /// }
 /// ```
-pub fn deregister_callback_listener<'a>(
-  account_name: &'a str,
-  access_token: &'a str,
-  session_token: &'a str,
-  service_name: &'a str,
-  response: &'a mut CallbackListenerResponse,
-) -> Result<&'a CallbackListenerResponse, Box<dyn std::error::Error>> {
+pub async fn deregister_callback_listener(
+  account_name: &str,
+  access_token: &str,
+  session_token: &str,
+  service_name: &str,
+  client: Option<reqwest::Client>,
+) -> Result<CallbackListenerResponse, Error> {
+  let client = match client {
+    Some(c) => c,
+    None => reqwest::Client::new(),
+  };
+
   let mut url = String::with_capacity(128);
   url.push_str(concatcp!(M2M_REST_API_V1, "/callbacks/"));
   url.push_str(account_name);
   url.push_str("/name/");
   url.push_str(service_name);
 
-  *response = ureq::delete(url)
+  let request = client
+    .delete(url)
     .header("Accept", "application/json")
     .header("Content-Type", "application/json")
-    .header("Authorization", oauth_field(access_token))
     .header(SESSION_TOKEN_FIELD, session_token)
-    .call()?
-    .body_mut()
-    .read_json::<CallbackListenerResponse>()?;
+    .header("Authorization", oauth_field(access_token))
+    .send()
+    .await;
 
-  Ok(response)
+  match request {
+    Ok(response) => {
+      let status = response.status().as_u16();
+      if (400..600).contains(&status) {
+        let json = response.json().await?;
+        return Err(Error::ThingSpace(json));
+      }
+      Ok(response.json::<CallbackListenerResponse>().await?)
+    }
+    Err(e) => {
+      println!("{e:?}");
+      Err(Error::Reqwest(e))
+    }
+  }
+
+  // *response = ureq::delete(url)
+  //   .header("Accept", "application/json")
+  //   .header("Content-Type", "application/json")
+  //   .header("Authorization", oauth_field(access_token))
+  //   .header(SESSION_TOKEN_FIELD, session_token)
+  //   .call()?
+  //   .body_mut()
+  //   .read_json::<CallbackListenerResponse>()?;
+
+  // Ok(response)
 }
 
 /// Returns the name and endpoint URL of the callback listening services registered for a given account.
@@ -160,23 +209,49 @@ pub fn deregister_callback_listener<'a>(
 ///   }
 /// }
 /// ```
-pub fn list_callback_listeners<'a>(
-  account_name: &'a str,
-  access_token: &'a str,
-  session_token: &'a str,
-  response: &'a mut Vec<CallbackListener>,
-) -> Result<&'a Vec<CallbackListener>, Box<dyn std::error::Error>> {
+pub async fn list_callback_listeners(
+  account_name: &str,
+  access_token: &str,
+  session_token: &str,
+  client: Option<reqwest::Client>,
+) -> Result<Vec<CallbackListener>, Error> {
+  let client = match client {
+    Some(c) => c,
+    None => reqwest::Client::new(),
+  };
+
   let mut url = String::with_capacity(80);
   url.push_str(concatcp!(M2M_REST_API_V1, "/callbacks/"));
   url.push_str(account_name);
 
-  *response = ureq::get(url)
+  let request = client
+    .get(url)
     .header("Accept", "application/json")
-    .header("Authorization", oauth_field(access_token))
     .header(SESSION_TOKEN_FIELD, session_token)
-    .call()?
-    .body_mut()
-    .read_json::<Vec<CallbackListener>>()?;
+    .header("Authorization", oauth_field(access_token))
+    .send()
+    .await;
 
-  Ok(response)
+  match request {
+    Ok(response) => {
+      let status = response.status().as_u16();
+      if (400..600).contains(&status) {
+        let json = response.json().await?;
+        return Err(Error::ThingSpace(json));
+      }
+      Ok(response.json::<Vec<CallbackListener>>().await?)
+    }
+    Err(e) => {
+      println!("{e:?}");
+      Err(Error::Reqwest(e))
+    }
+  }
+
+  // *response = ureq::get(url)
+  //   .header("Accept", "application/json")
+  //   .header("Authorization", oauth_field(access_token))
+  //   .header(SESSION_TOKEN_FIELD, session_token)
+  //   .call()?
+  //   .body_mut()
+  //   .read_json::<Vec<CallbackListener>>()?;
 }
