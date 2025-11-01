@@ -14,3 +14,5 @@ pub use carrier_information::CarrierInformation;
 
 mod extended_attribute;
 pub use extended_attribute::ExtendedAttribute;
+
+mod nidd;

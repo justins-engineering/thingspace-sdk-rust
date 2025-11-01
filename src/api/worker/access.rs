@@ -56,7 +56,7 @@ pub async fn get_access_token(
       let status = response.status_code();
       if (400..600).contains(&status) {
         let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
+        return Err(Error::Credential(json));
       }
       Ok(response)
     }
@@ -95,7 +95,7 @@ pub async fn get_session_token(
       let status = response.status_code();
       if (400..600).contains(&status) {
         let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
+        return Err(Error::Credential(json));
       }
       Ok(response)
     }

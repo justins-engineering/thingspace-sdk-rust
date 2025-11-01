@@ -16,6 +16,7 @@ pub enum ServiceName {
   /// Asynchronous responses for all requests that change a device’s profile status,
   /// including download, enable, disable, and delete.
   DeviceProfileService,
+  DevicePromoUsage,
   /// Asynchronous responses to POST /devices/availability/actions/list and
   /// POST /devices/actions/upload requests.
   DeviceService,
@@ -33,6 +34,7 @@ pub enum ServiceName {
   /// The contents of SMS messages sent from your devices to 750075007500 or to 900060005010.
   /// Notification of when messages sent through POST /sms requests are sent by the network to devices.
   EnhancedConnectivityService,
+  ExtendedEnhancedConnectivityService,
   /// Receive callback messages when provisioning changes are made outside of the ThingSpace APIs,
   /// such as when a user performs one of the following provisioning actions from an interactive
   /// Verizon system: Activate, Deactivate, Suspend, Resume or Change MDN.
@@ -40,6 +42,7 @@ pub enum ServiceName {
   /// Receive callback notifications from the ThingSpace Intelligence service such as real-time
   /// network conditions, static coverage, FWA coverage, site proximity and device experience score.
   IntelligenceService,
+  NetworkEventService,
   /// Asynchronous responses (second callback) for all requests that change a device’s state
   /// and metadata, including: activate, suspend, restore, deactivate, changedeviceserviceplan and
   /// NIDD Configuration success/failure (for NB-IoT devices only). Asynchronous responses for all
@@ -51,6 +54,8 @@ pub enum ServiceName {
   /// message is sent shortly after the end of a device’s billing cycle if a promotional package
   /// was removed during the billing cycle.
   PromoChanges,
+  PwnService,
+  QoS,
   /// Receive callback messages to notify about suspended devices that are automatically
   /// returned to active status. ThingSpace sends a callback message 7 days before a suspended
   /// device will auto-resume.
@@ -64,10 +69,5 @@ pub enum ServiceName {
   StateService,
   /// Notification that data will be partially or completely "Throttled".
   SubscriptionNotificationService,
-  Extended,
-  DevicePromoUsage,
   VIPCallbackService,
-  PwnService,
-  QoS,
-  NetworkEventService,
 }

@@ -41,10 +41,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   get_credentials(&secrets, &mut credentials, client.clone()).await;
   get_devices(&secrets, &mut credentials, client.clone()).await;
 
-  set_callback_listener(&secrets.account_name, &mut credentials, client.clone()).await;
-  print_listeners(&secrets.account_name, &mut credentials, client.clone()).await;
-  delete_callback_listener(&secrets.account_name, &mut credentials, client.clone()).await;
-  print_listeners(&secrets.account_name, &mut credentials, client).await;
+  // set_callback_listener(&secrets.account_name, &mut credentials, client.clone()).await;
+  // print_listeners(&secrets.account_name, &mut credentials, client.clone()).await;
+  // delete_callback_listener(&secrets.account_name, &mut credentials, client.clone()).await;
+  // print_listeners(&secrets.account_name, &mut credentials, client).await;
   Ok(())
 }
 

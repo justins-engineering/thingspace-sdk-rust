@@ -25,9 +25,26 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     .post_async("/api/callback_listener", api::create_listeners)
     .delete_async("/api/callback_listener/:name", api::delete_listeners)
     .post_async("/api/device", api::list_devices)
+    .or_else_any_method_async("/vzw", log_request)
     .run(req, env)
     .await
 }
+
+pub async fn log_request(
+  mut req: Request,
+  _ctx: worker::RouteContext<()>,
+) -> worker::Result<Response> {
+  worker::console_log!("{:#?}", req.headers());
+  let body = req.text().await;
+
+  match body {
+    Ok(b) => worker::console_log!("{b}"),
+    Err(e) => worker::console_error!("{e}"),
+  }
+
+  Response::empty()
+}
+
 // #[event(fetch)]
 // async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 //   Router::new()
