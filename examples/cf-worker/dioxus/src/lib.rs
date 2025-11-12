@@ -5,7 +5,6 @@ use strum::IntoEnumIterator;
 #[cfg(feature = "api")]
 use thingspace_sdk::models::{CallbackListener, Device, ServiceName};
 // use thingspace_sdk::models::{CallbackListener, LoginResponse, Session};
-use dioxus::logger::tracing::{error, info, warn};
 
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 
@@ -93,7 +92,7 @@ pub fn Index() -> Element {
   // let _ = use_resource(move || async move {
   //   api::callback_list().await;
   // });
-  let _ = use_resource(move || async move {
+  use_resource(move || async move {
     api::listener_list().await;
     api::device_list().await;
   });
@@ -227,30 +226,29 @@ pub fn CreateListenerModal() -> Element {
     dialog { class: "modal", id: "create_listener_modal",
       div { class: "modal-box relative max-w-xs md:max-w-sm",
         form { class: "absolute end-2 top-2", method: "dialog",
-          // onsubmit: move |evt: FormEvent| async move {
-          //     evt.metadata.borrow_mut().prevent_default = false;
-          // },
+
           button { class: "btn btn-sm btn-circle btn-ghost", "X" }
         }
         div { class: "text-center text-xl font-medium", "Register Callback Listener" }
         form {
           onsubmit: move |evt: FormEvent| async move {
               evt.prevent_default();
-              let cbl = CallbackListener {
-                  service_name: evt.values()["service_name"].as_value(),
-                  url: evt.values()["url"].as_value(),
-                  username: if evt.values()["username"].as_value().is_empty() {
-                      None
-                  } else {
-                      Some(evt.values()["username"].as_value())
-                  },
-                  password: if evt.values()["password"].as_value().is_empty() {
-                      None
-                  } else {
-                      Some(evt.values()["password"].as_value())
-                  },
-                  account_name: None,
-              };
+              let mut cbl = CallbackListener::default();
+              for (key, val) in evt.values() {
+                  if let FormValue::Text(val) = val {
+                      if key == "service_name" {
+                          cbl.service_name = val;
+                      } else if key == "url" {
+                          cbl.url = val;
+                      } else if key == "username" {
+                          cbl.username = Some(val);
+                      } else if key == "password" {
+                          cbl.password = Some(val);
+                      } else if key == "account_name" {
+                          cbl.account_name = Some(val);
+                      }
+                  }
+              }
               api::create_listener(&cbl).await;
           },
           fieldset { class: "fieldset mt-5",

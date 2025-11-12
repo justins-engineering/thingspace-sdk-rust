@@ -1,4 +1,4 @@
-use dioxus::logger::tracing::{error, info, warn};
+use dioxus::logger::tracing::{error, warn};
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use thingspace_sdk::models::{CallbackListener, CallbackListenerResponse, Error};
