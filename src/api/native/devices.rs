@@ -1,5 +1,8 @@
 use crate::api::request_helpers::{M2M_REST_API_V1, SESSION_TOKEN_FIELD, oauth_field};
-use crate::models::{AccountDeviceListRequest, AccountDeviceListResponse, Error};
+use crate::models::{
+  AccountDeviceListRequest, AccountDeviceListResponse, Error, NiddMessage, NiddRequest,
+  NiddResponse,
+};
 use const_format::concatcp;
 
 /// Makes an API request for an Account Device List and returns a [`AccountDeviceListResponse`].
@@ -69,6 +72,44 @@ pub async fn devices_list(
         return Err(Error::ThingSpace(json));
       }
       Ok(response.json::<AccountDeviceListResponse>().await?)
+    }
+    Err(e) => {
+      println!("{e:?}");
+      Err(Error::Reqwest(e))
+    }
+  }
+}
+
+pub async fn send_nidd(
+  access_token: &str,
+  session_token: &str,
+  nidd_msg: &mut NiddMessage,
+  client: Option<reqwest::Client>,
+) -> Result<NiddRequest, Error> {
+  let body = serde_json::to_string(nidd_msg)?;
+  let client = match client {
+    Some(c) => c,
+    None => reqwest::Client::new(),
+  };
+
+  let request = client
+    .post(concatcp!(M2M_REST_API_V1, "/devices/nidd/message"))
+    .header("Accept", "application/json")
+    .header("Content-Type", "application/json")
+    .header(SESSION_TOKEN_FIELD, session_token)
+    .header("Authorization", oauth_field(access_token))
+    .body(body)
+    .send()
+    .await;
+
+  match request {
+    Ok(response) => {
+      let status = response.status().as_u16();
+      if (400..600).contains(&status) {
+        let json = response.json().await?;
+        return Err(Error::ThingSpace(json));
+      }
+      Ok(response.json::<NiddRequest>().await?)
     }
     Err(e) => {
       println!("{e:?}");

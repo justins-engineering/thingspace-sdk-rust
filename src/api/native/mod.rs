@@ -4,6 +4,7 @@ pub use access::get_session_token;
 
 mod devices;
 pub use devices::devices_list;
+pub use devices::send_nidd;
 
 mod registered_callback_listeners;
 pub use registered_callback_listeners::deregister_callback_listener;

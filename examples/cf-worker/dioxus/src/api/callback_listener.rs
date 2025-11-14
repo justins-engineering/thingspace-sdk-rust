@@ -14,11 +14,6 @@ struct RequestHeaders {
   content_type: String,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-struct Access {
-  access_token: String,
-}
-
 pub async fn listener_list() {
   let mut location = String::with_capacity(128);
   let host = &::web_sys::window()
@@ -72,7 +67,7 @@ pub async fn listener_list() {
     error!("Failed to parse listeners response json!");
     return;
   };
-  let mut list = use_context::<crate::LocalSession>().listeners;
+  let mut list = consume_context::<crate::LocalSession>().listeners;
 
   match serde_wasm_bindgen::from_value(json).map_err(Error::from) {
     Ok(resp) => {

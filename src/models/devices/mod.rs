@@ -16,3 +16,6 @@ mod extended_attribute;
 pub use extended_attribute::ExtendedAttribute;
 
 mod nidd;
+pub use nidd::NiddMessage;
+pub use nidd::NiddRequest;
+pub use nidd::NiddResponse;

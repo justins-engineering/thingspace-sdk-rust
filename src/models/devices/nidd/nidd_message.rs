@@ -10,7 +10,7 @@ pub struct NiddMessage {
   /// and then five more digits. Must include any leading zeros.
   pub account_name: String,
   /// Array of [`DeviceID`]s
-  pub device_ids: [DeviceID; 6],
+  pub device_ids: Vec<DeviceID>,
   /// Identifies the maximum time for the delivery of the data to the device,
   /// in units of seconds. The allowed range is between 2 secs and 2592000 secs (30 days).
   pub maximum_delivery_time: i32,
@@ -22,16 +22,25 @@ impl Default for NiddMessage {
   fn default() -> NiddMessage {
     NiddMessage {
       account_name: String::with_capacity(32),
-      device_ids: [
-        DeviceID::default(),
-        DeviceID::default(),
-        DeviceID::default(),
-        DeviceID::default(),
-        DeviceID::default(),
-        DeviceID::default(),
-      ],
+      device_ids: vec![DeviceID::default()],
       maximum_delivery_time: i32::default(),
       message: String::with_capacity(32),
+    }
+  }
+}
+
+/// A struct containing a NIDD Message request id.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NiddRequest {
+  /// requestId for async NIDD message
+  pub request_id: String,
+}
+
+impl Default for NiddRequest {
+  fn default() -> NiddRequest {
+    NiddRequest {
+      request_id: String::with_capacity(36),
     }
   }
 }

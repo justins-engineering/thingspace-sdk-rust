@@ -2,8 +2,12 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use thingspace_sdk::api::{
   deregister_callback_listener, devices_list, list_callback_listeners, register_callback_listener,
+  send_nidd,
 };
-use thingspace_sdk::models::{AccountDeviceListRequest, CallbackListener, SessionRequestBody};
+use thingspace_sdk::models::{
+  AccountDeviceListRequest, CallbackListener, Device, DeviceID, Error, NiddMessage, NiddResponse,
+  SessionRequestBody,
+};
 
 /// A struct containing a user's Verizon account secrets required for API use.
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -39,7 +43,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   let client = reqwest::Client::new();
 
   get_credentials(&secrets, &mut credentials, client.clone()).await;
-  get_devices(&secrets, &mut credentials, client.clone()).await;
+  let dev_resp = get_devices(&secrets, &mut credentials, client.clone()).await;
+
+  // let mut dev_list: Vec<Device> = Vec::with_capacity(1);
+  match dev_resp {
+    Ok(dev_list) => {
+      let mut dev_ids: Vec<DeviceID> = Vec::with_capacity(dev_list.len());
+      for dev in dev_list {
+        let dev_id = dev.device_ids.first().unwrap();
+
+        dev_ids.push(DeviceID {
+          id: dev_id.id.to_owned(),
+          kind: dev_id.kind.to_owned(),
+        });
+      }
+
+      send_nidd_msgs(&secrets.account_name, &credentials, dev_ids, client).await;
+    }
+    Err(e) => {
+      println!("{e:?}");
+    }
+  }
 
   // set_callback_listener(&secrets.account_name, &mut credentials, client.clone()).await;
   // print_listeners(&secrets.account_name, &mut credentials, client.clone()).await;
@@ -87,7 +111,11 @@ async fn get_credentials(secrets: &Secrets, cred: &mut Credentials, client: reqw
   }
 }
 
-async fn get_devices(secrets: &Secrets, cred: &mut Credentials, client: reqwest::Client) {
+async fn get_devices(
+  secrets: &Secrets,
+  cred: &mut Credentials,
+  client: reqwest::Client,
+) -> Result<Vec<Device>, Error> {
   let mut device_request = AccountDeviceListRequest::default();
 
   match devices_list(
@@ -101,6 +129,35 @@ async fn get_devices(secrets: &Secrets, cred: &mut Credentials, client: reqwest:
   {
     Ok(response) => {
       println!("{:#?}", response.devices[0]);
+      Ok(response.devices)
+    }
+    Err(error) => Err(error),
+  }
+}
+
+async fn send_nidd_msgs(
+  aname: &str,
+  cred: &Credentials,
+  dev_ids: Vec<DeviceID>,
+  client: reqwest::Client,
+) {
+  let mut msg = NiddMessage {
+    account_name: aname.to_string(),
+    device_ids: dev_ids,
+    maximum_delivery_time: 30,
+    message: "SEVMTE8=".to_string(),
+  };
+
+  match send_nidd(
+    &cred.access_token,
+    &cred.session_token,
+    &mut msg,
+    Some(client),
+  )
+  .await
+  {
+    Ok(response) => {
+      println!("{response:?}",);
     }
     Err(error) => {
       println!("{error:?}");

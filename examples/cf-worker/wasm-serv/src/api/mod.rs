@@ -9,3 +9,6 @@ pub use registered_callback_listeners::list_listeners;
 
 mod devices;
 pub use devices::list_devices;
+
+mod nidd;
+pub use nidd::send_nidd_msg;

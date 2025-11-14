@@ -13,6 +13,10 @@ mod devices;
 pub use devices::AccountDeviceListRequest;
 pub use devices::AccountDeviceListResponse;
 pub use devices::Device;
+pub use devices::DeviceID;
+pub use devices::NiddMessage;
+pub use devices::NiddRequest;
+pub use devices::NiddResponse;
 
 mod registered_callback_listener;
 pub use registered_callback_listener::CallbackListener;

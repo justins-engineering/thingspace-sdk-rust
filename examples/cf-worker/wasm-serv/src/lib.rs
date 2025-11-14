@@ -25,6 +25,7 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     .post_async("/api/callback_listener", api::create_listeners)
     .delete_async("/api/callback_listener/:name", api::delete_listeners)
     .post_async("/api/device", api::list_devices)
+    .post_async("/api/send_nidd", api::send_nidd_msg)
     .or_else_any_method_async("/vzw", log_request)
     .run(req, env)
     .await
