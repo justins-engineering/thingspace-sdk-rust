@@ -16,12 +16,159 @@ fn DeviceInfo(id: String) -> Element {
   match use_context::<crate::LocalSession>().devices.read().get(&id) {
     Some(dev) => {
       rsx! {
-        div { class: "mt-5",
-          h2 { class: "text-2xl", "Devices" }
-          ul { class: "list",
-            li { class: "list-row",
-              div { "Account Name" }
-              div { "{dev.account_name}" }
+        div { class: "my-5 flex flex-row justify-around items-center",
+          if dev.connected {
+            p { class: "text-2xl",
+              span { class: "status status-lg status-success" }
+              " Connected"
+            }
+          } else {
+            p { class: "text-2xl",
+              span { class: "status status-lg" }
+              " Disconnected"
+            }
+          }
+          button {
+            class: "btn btn-outline",
+            onclick: move |_| {
+                document::eval(r#"document.getElementById("send_nidd_modal").showModal();"#);
+            },
+            "Send NIDD"
+          }
+        }
+
+        div { class: "my-5",
+          h2 { class: "text-2xl", "Device IDs" }
+          div { class: "overflow-x-auto rounded-box border border-base-content/5",
+            table { class: "table",
+              thead {
+                tr {
+                  for did in dev.device_ids.iter() {
+                    th { class: "border-r border-base-content/5",
+                      "{did.kind.to_uppercase()}"
+                    }
+                  }
+                }
+              }
+              tbody {
+                tr {
+                  for did in dev.device_ids.iter() {
+                    td { class: "border-r border-base-content/5",
+                      "{did.id}"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        div { class: "my-5",
+          h2 { class: "text-2xl", "Activity" }
+          div { class: "overflow-x-auto rounded-box border border-base-content/5",
+            table { class: "table",
+              thead {
+                tr {
+                  // th { class: "border-r border-base-content/5", "Connected" }
+                  th { class: "border-r border-base-content/5",
+                    "Last connection date"
+                  }
+                  th { class: "border-r border-base-content/5", "Created at" }
+                  th { class: "border-r border-base-content/5", "Last Activation By" }
+                  th { class: "border-r border-base-content/5",
+                    "Last Activation Date"
+                  }
+                }
+              }
+              tbody {
+                tr {
+                  // td { class: "border-r border-base-content/5", "{dev.connected}" }
+                  td { class: "border-r border-base-content/5",
+                    "{dev.last_connection_date}"
+                  }
+                  td { class: "border-r border-base-content/5", "{dev.created_at}" }
+                  td { class: "border-r border-base-content/5",
+                    "{dev.last_activation_by}"
+                  }
+                  td { class: "border-r border-base-content/5",
+                    "{dev.last_activation_date}"
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        div { class: "my-5",
+          h2 { class: "text-2xl", "Account Info" }
+          div { class: "overflow-x-auto rounded-box border border-base-content/5",
+            table { class: "table",
+              thead {
+                tr {
+                  th { class: "border-r border-base-content/5", "Account Name" }
+                  th { class: "border-r border-base-content/5", "Group Name" }
+                }
+              }
+              tbody {
+                tr {
+                  td { class: "border-r border-base-content/5", "{dev.account_name}" }
+                  td { class: "border-r border-base-content/5",
+                    "{dev.group_names[0]}"
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        div { class: "my-5",
+          h2 { class: "text-2xl", "Plan" }
+          div { class: "overflow-x-auto rounded-box border border-base-content/5",
+            table { class: "table",
+              thead {
+                tr {
+                  th { class: "border-r border-base-content/5", "Carrier Name" }
+                  th { class: "border-r border-base-content/5", "Service Plan" }
+                  th { class: "border-r border-base-content/5", "State" }
+                  th { class: "border-r border-base-content/5",
+                    "Billing Cycle End Date"
+                  }
+                }
+              }
+              tbody {
+                tr {
+                  for cinf in dev.carrier_informations.iter() {
+                    td { class: "border-r border-base-content/5",
+                      "{cinf.carrier_name}"
+                    }
+                    td { class: "border-r border-base-content/5",
+                      "{cinf.service_plan}"
+                    }
+                    td { class: "border-r border-base-content/5",
+                      "{cinf.state}"
+                    }
+                    td { class: "border-r border-base-content/5",
+                      "{dev.billing_cycle_end_date}"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        div { class: "my-5",
+          h2 { class: "text-2xl", "Extended Attributes" }
+          ul { class: "list rounded-box border border-base-content/5",
+            for ea in dev.extended_attributes.iter() {
+              if let Some(val) = &ea.value && !val.is_empty() {
+                li { class: "list-row grid-cols-2",
+                  div { class: "col-span-1 border-r border-base-content/5",
+                    "{ea.key}"
+                  }
+                  div { "{val}" }
+                }
+              }
             }
           }
         }
@@ -66,7 +213,7 @@ fn SendNiddModal(id: String) -> Element {
                   send_nidd(&msg).await;
               }
           },
-          fieldset { class: "fieldset mt-5",
+          fieldset { class: "fieldset my-5",
             legend { class: "fieldset-legend", "Maximum Delivery Time" }
             input {
               class: "input validator w-full focus:outline-0",
@@ -81,7 +228,7 @@ fn SendNiddModal(id: String) -> Element {
               "The allowed range is between 2 secs and 2592000 secs (30 days)."
             }
           }
-          fieldset { class: "fieldset mt-5",
+          fieldset { class: "fieldset my-5",
             legend { class: "fieldset-legend", "Message" }
             label { class: "input w-full focus:outline-0",
               input {
@@ -93,7 +240,7 @@ fn SendNiddModal(id: String) -> Element {
               }
             }
           }
-          div { class: "mt-5 flex items-center justify-end gap-3",
+          div { class: "my-5 flex items-center justify-end gap-3",
             button { class: "btn btn-primary", r#type: "submit",
               // onsubmit: move |evt: FormEvent| async move {
               //     evt.prevent_default();
@@ -109,251 +256,3 @@ fn SendNiddModal(id: String) -> Element {
     }
   }
 }
-
-// Device {
-//     account_name: "0742644905-00001",
-//     billing_cycle_end_date: DateTime {
-//         date: YMD {
-//             year: 2025,
-//             month: 11,
-//             day: 22,
-//         },
-//         time: Time {
-//             hour: 12,
-//             minute: 0,
-//             second: 0,
-//             millisecond: 0,
-//             tz_offset_hours: 0,
-//             tz_offset_minutes: 0,
-//         },
-//     },
-//     carrier_informations: [
-//         CarrierInformation {
-//             carrier_name: "Verizon Wireless",
-//             service_plan: "NB IOT UNL EVENT FIXED",
-//             state: "active",
-//         },
-//     ],
-//     connected: false,
-//     created_at: DateTime {
-//         date: YMD {
-//             year: 2024,
-//             month: 11,
-//             day: 27,
-//         },
-//         time: Time {
-//             hour: 22,
-//             minute: 48,
-//             second: 26,
-//             millisecond: 0,
-//             tz_offset_hours: 0,
-//             tz_offset_minutes: 0,
-//         },
-//     },
-//     device_ids: [
-//         DeviceID {
-//             id: "4062914013",
-//             kind: "mdn",
-//         },
-//         DeviceID {
-//             id: "311270028205048",
-//             kind: "imsi",
-//         },
-//         DeviceID {
-//             id: "350457799502610",
-//             kind: "imei",
-//         },
-//         DeviceID {
-//             id: "89148000008531108276",
-//             kind: "iccId",
-//         },
-//         DeviceID {
-//             id: "14062914013",
-//             kind: "msisdn",
-//         },
-//         DeviceID {
-//             id: "4062912483",
-//             kind: "min",
-//         },
-//     ],
-//     extended_attributes: [
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseTitle",
-//             value: None,
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseFirstName",
-//             value: Some(
-//                 "JUSTINS ENGINEERING",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseMiddleName",
-//             value: Some(
-//                 "",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseLastName",
-//             value: Some(
-//                 "JUSTINS ENGINEERING SERVI",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseSuffix",
-//             value: Some(
-//                 "",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseAddressLine1",
-//             value: Some(
-//                 "30 VIRGINIA AVE",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseAddressLine2",
-//             value: Some(
-//                 "",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseCity",
-//             value: Some(
-//                 "WEST SPRINGFIELD",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseState",
-//             value: Some(
-//                 "MA",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseCountry",
-//             value: Some(
-//                 "USA",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseZipCode",
-//             value: Some(
-//                 "01089",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseZipCode4",
-//             value: Some(
-//                 "2251",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseCBRPhone",
-//             value: None,
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseCBRPhoneType",
-//             value: None,
-//         },
-//         ExtendedAttribute {
-//             key: "PrimaryPlaceOfUseEmailAddress",
-//             value: Some(
-//                 "",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "AccountNumber",
-//             value: Some(
-//                 "0742644905-00001",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "SmsrOid",
-//             value: None,
-//         },
-//         ExtendedAttribute {
-//             key: "ProfileStatus",
-//             value: None,
-//         },
-//         ExtendedAttribute {
-//             key: "SkuNumber",
-//             value: Some(
-//                 "VZW200001820001",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "CostCenterCode",
-//             value: Some(
-//                 "",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PreIMEI",
-//             value: Some(
-//                 "350457799502610",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "PreSKU",
-//             value: None,
-//         },
-//         ExtendedAttribute {
-//             key: "SIMOTADate",
-//             value: Some(
-//                 "2024-11-27T23:02:38Z",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "RoamingStatus",
-//             value: Some(
-//                 "Unavailable",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "LastRoamingStatusUpdate",
-//             value: Some(
-//                 "2025-10-27T17:02:02Z",
-//             ),
-//         },
-//         ExtendedAttribute {
-//             key: "DeviceId",
-//             value: Some(
-//                 "398362701",
-//             ),
-//         },
-//     ],
-//     group_names: [
-//         "Default: 0742644905-00001",
-//     ],
-//     last_activation_by: "Justin Forgue",
-//     last_activation_date: DateTime {
-//         date: YMD {
-//             year: 2024,
-//             month: 11,
-//             day: 27,
-//         },
-//         time: Time {
-//             hour: 22,
-//             minute: 50,
-//             second: 10,
-//             millisecond: 0,
-//             tz_offset_hours: 0,
-//             tz_offset_minutes: 0,
-//         },
-//     },
-//     last_connection_date: DateTime {
-//         date: YMD {
-//             year: 2025,
-//             month: 10,
-//             day: 27,
-//         },
-//         time: Time {
-//             hour: 17,
-//             minute: 2,
-//             second: 2,
-//             millisecond: 0,
-//             tz_offset_hours: 0,
-//             tz_offset_minutes: 0,
-//         },
-//     },
-// }

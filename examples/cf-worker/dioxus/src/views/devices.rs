@@ -11,7 +11,7 @@ pub fn DevicesView() -> Element {
 #[component]
 fn DevicesTable() -> Element {
   rsx! {
-    div { class: "mt-5",
+    div { class: "my-5",
       h2 { class: "text-2xl", "Devices" }
       div { class: "overflow-x-auto rounded-box border border-base-content/30",
         table { class: "table",

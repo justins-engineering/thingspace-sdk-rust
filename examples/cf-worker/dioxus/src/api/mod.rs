@@ -1,8 +1,3 @@
-#[cfg(feature = "browser")]
-mod auth;
-#[cfg(feature = "browser")]
-pub use auth::login;
-
 mod device;
 pub use device::device_list;
 pub use device::send_nidd;
