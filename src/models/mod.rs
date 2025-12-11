@@ -14,9 +14,11 @@ pub use devices::AccountDeviceListRequest;
 pub use devices::AccountDeviceListResponse;
 pub use devices::Device;
 pub use devices::DeviceID;
-pub use devices::NiddMessage;
-pub use devices::NiddRequest;
-pub use devices::NiddResponse;
+
+mod nidd;
+pub use nidd::NiddCallback;
+pub use nidd::NiddMessage;
+pub use nidd::NiddRequest;
 
 mod registered_callback_listener;
 pub use registered_callback_listener::CallbackListener;
