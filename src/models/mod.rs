@@ -19,6 +19,7 @@ mod nidd;
 pub use nidd::NiddCallback;
 pub use nidd::NiddMessage;
 pub use nidd::NiddRequest;
+pub use nidd::NiddResponse;
 
 mod registered_callback_listener;
 pub use registered_callback_listener::CallbackListener;
