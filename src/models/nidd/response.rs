@@ -1,5 +1,5 @@
 use crate::models::devices::DeviceID;
-use iso8601::DateTime;
+// use iso8601::DateTime;
 use serde::Deserialize;
 
 /// NIDD response enum type; either `NiddMONotificationResponse` or `NiddMONotificationResponse`.
@@ -25,10 +25,10 @@ pub enum NiddResponse {
     /// Identifies the absolute time at which the device receiving data is acknowledged
     /// by Network (SCEF). The format should be aligned with RFC3339,
     /// example: "2017-12-19T16:39:57-08:00" (in UTC passed as a String).
-    acknowledge_time: Option<DateTime>,
+    acknowledge_time: Option<String>,
     /// Identifies the absolute time at which the data send is attempted to the device
     /// for the first time, as device becomes reachable.
-    first_attempt_delivery_time: Option<DateTime>,
+    first_attempt_delivery_time: Option<String>,
     /// This displays only if the status is Failed. Valid values include:
     /// Buffered, device not reachable
     /// Timeout, could not deliver data
