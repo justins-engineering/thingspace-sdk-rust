@@ -34,7 +34,16 @@ serde_urlencoded = { version = "0.7", optional = true }
 serde-wasm-bindgen = { version = "0.6", optional = true }
 wasm-bindgen = { version = "0.2", optional = true }
 wasm-bindgen-futures = { version = "0.4", optional = true }
-web-sys = { version = "0.3", features = ["console", "Headers", "Request", "RequestInit", "RequestMode", "Response", "Window", "RequestCredentials"], optional = true }
+web-sys = { version = "0.3", features = [
+  "console",
+  "Headers",
+  "Request",
+  "RequestInit",
+  "RequestMode",
+  "Response",
+  "Window",
+  "RequestCredentials",
+], optional = true }
 
 # "worker" feature deps
 worker = { version = "0.7", optional = true }
@@ -48,13 +57,20 @@ name = "native"
 path = "examples/native.rs"
 required-features = ["reqwest"]
 
-[[example]]
-name = "cf-worker"
-path = "examples/cf-worker"
-required-features = ["worker"]
-
 [features]
 default = ["worker"]
 reqwest = ["dep:reqwest"]
-wasm = ["dep:serde_urlencoded", "dep:serde-wasm-bindgen", "dep:wasm-bindgen", "dep:wasm-bindgen-futures", "dep:web-sys"]
-worker = ["dep:serde_urlencoded", "dep:serde-wasm-bindgen", "dep:wasm-bindgen", "dep:web-sys", "dep:worker"]
+wasm = [
+  "dep:serde_urlencoded",
+  "dep:serde-wasm-bindgen",
+  "dep:wasm-bindgen",
+  "dep:wasm-bindgen-futures",
+  "dep:web-sys",
+]
+worker = [
+  "dep:serde_urlencoded",
+  "dep:serde-wasm-bindgen",
+  "dep:wasm-bindgen",
+  "dep:web-sys",
+  "dep:worker",
+]
