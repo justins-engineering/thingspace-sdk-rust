@@ -24,7 +24,7 @@ impl Default for NiddMessage {
       account_name: String::with_capacity(32),
       device_ids: vec![DeviceID::default()],
       maximum_delivery_time: i32::default(),
-      message: String::with_capacity(32),
+      message: String::default(),
     }
   }
 }

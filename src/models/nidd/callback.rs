@@ -23,3 +23,16 @@ pub struct NiddCallback {
   /// Maximum number of callbacks allowed.
   pub max_callback_threshold: i32,
 }
+
+impl Default for NiddCallback {
+  fn default() -> Self {
+    NiddCallback {
+      request_id: String::with_capacity(36),
+      device_ids: [DeviceID::default()],
+      nidd_response: NiddResponse::default(),
+      status: None,
+      callback_count: i32::default(),
+      max_callback_threshold: i32::default(),
+    }
+  }
+}

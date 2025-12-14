@@ -40,3 +40,13 @@ pub enum NiddResponse {
     device_ids: Vec<DeviceID>,
   },
 }
+
+impl Default for NiddResponse {
+  fn default() -> Self {
+    NiddResponse::NiddMONotificationResponse {
+      account_name: String::with_capacity(36),
+      message: String::default(),
+      device_ids: vec![],
+    }
+  }
+}
