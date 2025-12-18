@@ -1,5 +1,8 @@
 [target.x86_64-unknown-linux-gnu]
-rustflags = ["-C", "target-cpu=native"]
+rustflags = ["-Ctarget-cpu=native"]
+
+[build]
+rustflags = ["-Cllvm-args=--inline-threshold=300"]
 
 [profile.release]
 codegen-units = 1
