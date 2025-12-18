@@ -1,6 +1,6 @@
 use super::{CarrierInformation, DeviceID, ExtendedAttribute};
-use iso8601::DateTime;
 use serde::{Deserialize, Serialize};
+// use iso8601::DateTime;
 
 /// A struct containing a Device.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -10,13 +10,13 @@ pub struct Device {
   /// Account name
   pub account_name: String,
   /// Billing cycle end date
-  pub billing_cycle_end_date: DateTime,
+  pub billing_cycle_end_date: String,
   /// Array of [`CarrierInformation`] objects (should only conatain 1 object)
   pub carrier_informations: [CarrierInformation; 1],
   /// Connection state
   pub connected: bool,
   /// Device creation date
-  pub created_at: DateTime,
+  pub created_at: String,
   /// Array of [`DeviceID`]s
   pub device_ids: [DeviceID; 6],
   /// Array of [`ExtendedAttribute`]s
@@ -26,19 +26,19 @@ pub struct Device {
   /// Last activated by user
   pub last_activation_by: String,
   /// Last activation date
-  pub last_activation_date: DateTime,
+  pub last_activation_date: String,
   /// Last connection date
-  pub last_connection_date: DateTime,
+  pub last_connection_date: String,
 }
 
 impl Default for Device {
   fn default() -> Device {
     Device {
       account_name: String::with_capacity(32),
-      billing_cycle_end_date: DateTime::default(),
+      billing_cycle_end_date: String::with_capacity(32),
       carrier_informations: [CarrierInformation::default()],
       connected: bool::default(),
-      created_at: DateTime::default(),
+      created_at: String::with_capacity(32),
       device_ids: [
         DeviceID::default(),
         DeviceID::default(),
@@ -50,8 +50,8 @@ impl Default for Device {
       extended_attributes: vec![ExtendedAttribute::default(); 26],
       group_names: [String::with_capacity(32)],
       last_activation_by: String::with_capacity(32),
-      last_activation_date: DateTime::default(),
-      last_connection_date: DateTime::default(),
+      last_activation_date: String::with_capacity(32),
+      last_connection_date: String::with_capacity(32),
     }
   }
 }
