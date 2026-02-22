@@ -1,7 +1,6 @@
 use crate::api::request_helpers::{M2M_REST_API_V1, SESSION_TOKEN_FIELD, oauth_field};
 use crate::models::{
   AccountDeviceListRequest, AccountDeviceListResponse, Error, NiddMessage, NiddRequest,
-  NiddResponse,
 };
 use const_format::concatcp;
 

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
 /// The name of the callback service to subscribe to. Set this to one of the following values:
-#[derive(Clone, Copy, Debug, Deserialize, Display, EnumIter, EnumString, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Display, EnumIter, EnumString, Serialize, PartialEq)]
 pub enum ServiceName {
   /// Callback messages sent when trigger conditions are met.
   AlertService,

@@ -5,7 +5,7 @@ use thingspace_sdk::api::{
   send_nidd,
 };
 use thingspace_sdk::models::{
-  AccountDeviceListRequest, CallbackListener, Device, DeviceID, Error, NiddMessage, NiddResponse,
+  AccountDeviceListRequest, CallbackListener, Device, DeviceID, Error, NiddMessage,
   SessionRequestBody,
 };
 

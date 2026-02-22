@@ -83,7 +83,7 @@ fn CreateListenerModal() -> Element {
   rsx! {
     dialog { class: "modal", id: "create_listener_modal",
       div { class: "modal-box relative max-w-xs md:max-w-sm",
-        form { class: "absolute end-2 top-2", method: "dialog",
+        form { class: "absolute inset-e-2 top-2", method: "dialog",
 
           button { class: "btn btn-sm btn-circle btn-ghost", "X" }
         }

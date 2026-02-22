@@ -18,49 +18,43 @@ crate-type = ["cdylib", "rlib"]
 wasm-opt = ["--enable-bulk-memory"]
 
 [dependencies]
-base64ct = "1.7.3"
+base64ct = "1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 const_format = { version = "0.2" }
 iso8601 = { version = "0.6", features = ["serde"] }
-strum = { version = "0.27", features = ["derive"] }
+strum = { version = "0.28", features = ["derive"] }
 # arraystring = { version = "0.3", features = ["serde"] }
 
 # "reqwest" feature deps
-reqwest = { version = "0.12", features = ["json"], optional = true }
+reqwest = { version = "0.13", features = ["json"], optional = true }
 
 # "wasm" feature deps
 serde_urlencoded = { version = "0.7", optional = true }
-serde-wasm-bindgen = { version = "0.4", optional = true }
-wasm-bindgen = { version = "0.2.100", optional = true }
-wasm-bindgen-futures = { version = "0.4.50", optional = true }
-web-sys = { version = "0.3.77", features = ["console", "Headers", "Request", "RequestInit", "RequestMode", "Response", "Window", "RequestCredentials"], optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }
+wasm-bindgen = { version = "0.2", optional = true }
+wasm-bindgen-futures = { version = "0.4", optional = true }
+web-sys = { version = "0.3", features = ["console", "Headers", "Request", "RequestInit", "RequestMode", "Response", "Window", "RequestCredentials"], optional = true }
 
 # "worker" feature deps
-worker = { version = "0.7", features = ['http'], optional = true }
+worker = { version = "0.7", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
-toml = { version = "0.9" }
+toml = { version = "1" }
 
 [[example]]
 name = "native"
 path = "examples/native.rs"
-required-features = ["reqwest", "rustls"]
+required-features = ["reqwest"]
 
 [[example]]
 name = "cf-worker"
 path = "examples/cf-worker"
 required-features = ["worker"]
 
-# [lints.clippy]
-# pedantic = { priority = -1, level = "warn" }
-
 [features]
-# default = ["wasm"]
 default = ["worker"]
-# default = ["reqwest", "rustls"]
 reqwest = ["dep:reqwest"]
-rustls = ["reqwest?/rustls-tls"]
 wasm = ["dep:serde_urlencoded", "dep:serde-wasm-bindgen", "dep:wasm-bindgen", "dep:wasm-bindgen-futures", "dep:web-sys"]
 worker = ["dep:serde_urlencoded", "dep:serde-wasm-bindgen", "dep:wasm-bindgen", "dep:web-sys", "dep:worker"]
