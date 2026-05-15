@@ -49,7 +49,7 @@ pub async fn get_access_token(
     "grant_type=client_credentials",
   )));
 
-  let request = Request::new_with_init(LOGIN_URL, &request_init)?;
+  let request: Request = Request::new_with_init(LOGIN_URL, &request_init)?;
 
   match Fetch::Request(request).send().await {
     Ok(mut response) => {
@@ -81,7 +81,7 @@ pub async fn get_session_token(
 
   let cred = serde_json::to_string(&cred)?;
 
-  let mut request_init = RequestInit::new();
+  let mut request_init: RequestInit = RequestInit::new();
   request_init.with_method(Method::Post);
 
   request_init.with_headers(headers);

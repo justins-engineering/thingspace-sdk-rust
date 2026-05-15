@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed linux api to native
 - Updated native samples
 - Moved cf-worker example to examples/cf-worker
+- Updated dependencies
 
 ### Removed
 

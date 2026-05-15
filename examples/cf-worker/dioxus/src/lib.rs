@@ -47,10 +47,10 @@ pub fn App() -> Element {
     devices: Signal::new(HashMap::<String, Device>::new()),
   });
 
-  // use_resource(move || async move {
-  //   device_list().await;
-  //   listener_list().await;
-  // });
+  use_resource(move || async move {
+    device_list().await;
+    listener_list().await;
+  });
 
   // let ws: gloo_net::websocket::futures::WebSocket =
   //   gloo_net::websocket::futures::WebSocket::open("ws://127.0.0.1:8787/connect").unwrap();

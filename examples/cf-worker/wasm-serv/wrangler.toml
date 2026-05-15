@@ -1,7 +1,6 @@
 name = "thingspace-sdk"
-compatibility_date = "2026-02-23"
+compatibility_date = "2026-03-10"
 send_metrics = false
-upload_source_maps = true
 main = "build/worker/shim.mjs"
 
 [assets]
