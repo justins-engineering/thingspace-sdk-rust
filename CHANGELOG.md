@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The library builds as an rlib only; the cdylib is the example worker's, so a dependent no longer
   also builds a stray `thingspace_sdk.wasm`
 
+### Fixed
+
+- The crate documentation named `ureq`, which the crate no longer uses
+
 ### Removed
 
 - console_error_panic_hook crate
