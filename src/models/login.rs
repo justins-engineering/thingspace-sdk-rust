@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// A struct containing the deserialized JSON returned from an OAuth2 access token API request.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+///
+/// It has no `Display`, and its `Debug` redacts the token, so logging one cannot leak it.
+#[derive(Clone, Deserialize, Serialize)]
 pub struct LoginResponse {
   /// The OAuth2 access token.
   pub access_token: String,
@@ -24,12 +27,31 @@ impl Default for LoginResponse {
   }
 }
 
-impl std::fmt::Display for LoginResponse {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(
-      f,
-      "Access Token: {}\nExpires: {}\nScope: {}\nToken Type: {}",
-      self.access_token, self.expires_in, self.scope, self.token_type
-    )
+impl fmt::Debug for LoginResponse {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.debug_struct("LoginResponse")
+      .field("access_token", &"<redacted>")
+      .field("scope", &self.scope)
+      .field("token_type", &self.token_type)
+      .field("expires_in", &self.expires_in)
+      .finish()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::LoginResponse;
+
+  #[test]
+  fn debug_redacts_the_access_token() {
+    let login = LoginResponse {
+      access_token: "d7bc43e9acc31aba9654fc5cd0d8c520".to_string(),
+      expires_in: 3600,
+      ..Default::default()
+    };
+
+    let debug = format!("{login:?}");
+    assert!(!debug.contains("d7bc43e9acc31aba9654fc5cd0d8c520"));
+    assert!(debug.contains("expires_in: 3600"));
   }
 }
