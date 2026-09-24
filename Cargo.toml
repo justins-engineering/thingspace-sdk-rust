@@ -11,12 +11,6 @@ description = "A unofficial SDK for interacting with the Verizon ThingSpace Stan
 keywords = ["wasm", "web-sys"]
 categories = ["wasm", "web-programming"]
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = ["--enable-bulk-memory"]
-
 [dependencies]
 base64ct = "1"
 serde = { version = "1", features = ["derive"] }

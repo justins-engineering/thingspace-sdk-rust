@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated native samples
 - Moved cf-worker example to examples/cf-worker
 - Updated dependencies
+- The library builds as an rlib only; the cdylib is the example worker's, so a dependent no longer
+  also builds a stray `thingspace_sdk.wasm`
 
 ### Removed
 
