@@ -6,7 +6,7 @@ use worker::{Headers, Method, Request, RequestInit, Response};
 use super::fetch;
 
 /// Makes an API request for an Account Device List and returns the
-/// [`AccountDeviceListResponse`] in a `worker::Response`.
+/// [`AccountDeviceListResponse`](crate::models::AccountDeviceListResponse) in a `worker::Response`.
 /// # Errors
 /// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///

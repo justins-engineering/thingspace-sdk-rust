@@ -41,7 +41,8 @@ pub async fn get_access_token(
   fetch(request).await
 }
 
-/// Makes an API request for a M2M session token and returns a [`Session`].
+/// Makes an API request for a M2M session token; the success body is a
+/// [`Session`](crate::models::Session).
 /// # Errors
 /// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 pub async fn get_session_token(
