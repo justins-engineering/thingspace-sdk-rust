@@ -52,15 +52,8 @@ use const_format::concatcp;
 ///   )
 ///   .await
 ///   {
-///     Ok(response) => {
-///       println!(
-///         "Access token: {}, Scope: {}, TokenType: {}, Expires in: {}",
-///         response.access_token, response.scope, response.token_type, response.expires_in
-///       );
-///     }
-///     Err(error) => {
-///       println!("{error:?}");
-///     }
+///     Ok(response) => println!("Access token expires in {} s", response.expires_in),
+///     Err(error) => println!("{error:?}"),
 ///   }
 /// }
 /// ```
@@ -136,15 +129,8 @@ pub async fn get_access_token(
 ///   };
 ///
 ///   match thingspace_sdk::api::get_session_token(&user_info, access_token, Some(client)).await {
-///     Ok(response) => {
-///       println!(
-///         "Session token: {}, Expires in: {}",
-///         response.session_token, response.expires_in
-///       );
-///     }
-///     Err(error) => {
-///       println!("{error:?}");
-///     }
+///     Ok(_session) => println!("Session started"),
+///     Err(error) => println!("{error:?}"),
 ///   }
 /// }
 /// ```

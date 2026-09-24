@@ -34,16 +34,9 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     .await
 }
 
-pub async fn log_request(
-  mut req: Request,
-  _ctx: worker::RouteContext<()>,
-) -> worker::Result<Response> {
-  let body = req.text().await;
-
-  match body {
-    Ok(b) => worker::console_log!("{b}"),
-    Err(e) => worker::console_error!("{e}"),
-  }
+pub async fn log_request(req: Request, _ctx: worker::RouteContext<()>) -> worker::Result<Response> {
+  // Only the method: every callback body carries the listener's username and password in clear.
+  worker::console_log!("{} /vzw", req.method());
 
   Response::empty()
 }

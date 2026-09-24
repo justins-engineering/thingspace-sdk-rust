@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- The examples no longer log or print the access token, the session token, the browser example's
+  token cookies, or raw callback bodies, which carry the listener password in clear
+
 ### Added
 
 - examples/native.rs

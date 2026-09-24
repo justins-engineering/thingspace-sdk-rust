@@ -82,8 +82,8 @@ async fn get_credentials(secrets: &Secrets, cred: &mut Credentials, client: reqw
   {
     Ok(response) => {
       println!(
-        "Access token: {}, Scope: {}, TokenType: {}, Expires in: {}",
-        response.access_token, response.scope, response.token_type, response.expires_in
+        "Access token received, expires in {} s",
+        response.expires_in
       );
       cred.access_token.clone_from(&response.access_token);
     }
@@ -99,10 +99,7 @@ async fn get_credentials(secrets: &Secrets, cred: &mut Credentials, client: reqw
 
   match thingspace_sdk::api::get_session_token(&user_info, &cred.access_token, Some(client)).await {
     Ok(response) => {
-      println!(
-        "Session token: {}, Expires in: {}",
-        response.session_token, response.expires_in
-      );
+      println!("Session token received");
       cred.session_token.clone_from(&response.session_token);
     }
     Err(error) => {

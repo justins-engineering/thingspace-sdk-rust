@@ -1,5 +1,5 @@
 use thingspace_sdk::models::NiddCallback;
-use worker::{Request, Response, RouteContext, console_error};
+use worker::{Request, Response, RouteContext, console_error, console_log};
 
 pub async fn receive_nidd_msg(
   mut req: Request,
@@ -15,22 +15,27 @@ pub async fn receive_nidd_msg(
   };
 
   if ctype == "application/json" {
-    let body = req.json::<NiddCallback>().await;
+    let Ok(body) = req.text().await else {
+      console_error!("NIDD callback body unreadable");
+      return Response::empty();
+    };
 
-    match body {
-      Ok(b) => {
-        worker::console_log!("{b:?}");
-        // worker::console_log!("{:?}", b.nidd_response);
-      }
-      Err(e) => console_error!("{e}"),
+    // The body carries the listener's password, the device's message and its identifiers, and
+    // serde's error text can quote any of them: log the request id and status, or where it failed.
+    match serde_json::from_str::<NiddCallback>(&body) {
+      Ok(callback) => console_log!(
+        "NIDD callback {} {:?}",
+        callback.request_id,
+        callback.status
+      ),
+      Err(e) => console_error!(
+        "NIDD callback unparsed: {:?} at column {}",
+        e.classify(),
+        e.column()
+      ),
     }
   } else {
     return Response::error("'Content-Type' must be 'application/json'", 400);
-    // let body = req.text().await;
-    // match body {
-    //   Ok(b) => worker::console_log!("{b}"),
-    //   Err(e) => worker::console_error!("{e}"),
-    // }
   }
 
   Response::empty()

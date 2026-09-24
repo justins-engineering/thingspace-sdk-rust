@@ -13,12 +13,10 @@ struct Access {
 
 pub async fn access_token(req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
   let auth = req.headers().get("Cookie");
-  console_warn!("{auth:?}");
   match auth {
     Ok(op) => {
       if let Some(auth) = op {
         let ac = serde_urlencoded::from_str::<Access>(&auth)?;
-        console_warn!("{ac:?}");
         if !ac.access_token.is_empty() {
           return Response::empty();
         }
@@ -40,8 +38,6 @@ pub async fn access_token(req: Request, ctx: RouteContext<()>) -> worker::Result
   match vz_req {
     Ok(mut resp) => match resp.json::<LoginResponse>().await {
       Ok(login) => {
-        console_warn!("{login}");
-
         let mut cookie = String::with_capacity(128);
 
         cookie.push_str("access_token=");
@@ -75,7 +71,6 @@ pub async fn session_token(req: Request, ctx: RouteContext<()>) -> worker::Resul
       match op {
         Some(auth) => {
           let ac: Access = serde_urlencoded::from_str::<Access>(&auth)?;
-          console_warn!("{}", ac.access_token);
           let env = ctx.env;
           let username: Secret = env.var("USERNAME")?;
           let password = env.var("PASSWORD")?;
@@ -91,8 +86,6 @@ pub async fn session_token(req: Request, ctx: RouteContext<()>) -> worker::Resul
             // Ok(resp) => Ok(resp),
             Ok(mut resp) => match resp.json::<Session>().await {
               Ok(login) => {
-                console_warn!("{login}");
-
                 let mut cookie = String::with_capacity(128);
 
                 cookie.push_str("bearer=");

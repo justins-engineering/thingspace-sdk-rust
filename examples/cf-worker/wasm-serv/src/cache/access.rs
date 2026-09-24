@@ -19,7 +19,7 @@ pub async fn access_token(ctx: &RouteContext<()>) -> worker::Result<String> {
       match vz_req {
         Ok(mut resp) => match resp.json::<LoginResponse>().await {
           Ok(login) => {
-            console_debug!("{login}");
+            console_debug!("Fetched an access_token, expires in {} s", login.expires_in);
 
             kv.put("access_token", &login.access_token)?
               .expiration_ttl(login.expires_in.try_into().unwrap())
@@ -41,7 +41,7 @@ pub async fn access_token(ctx: &RouteContext<()>) -> worker::Result<String> {
       }
     }
     Some(token) => {
-      console_debug!("Cached access_token: {token}");
+      console_debug!("Using the cached access_token");
       Ok(token)
     }
   }
@@ -70,7 +70,7 @@ pub async fn session_token(ctx: &RouteContext<()>) -> worker::Result<String> {
           match vz_req {
             Ok(mut resp) => match resp.json::<Session>().await {
               Ok(login) => {
-                console_debug!("{login}");
+                console_debug!("Fetched a session_token");
 
                 kv.put("session_token", &login.session_token)?
                   .expiration_ttl(login.expires_in.try_into().unwrap())
@@ -96,7 +96,7 @@ pub async fn session_token(ctx: &RouteContext<()>) -> worker::Result<String> {
       }
     }
     Some(token) => {
-      console_debug!("Cached session_token: {token}");
+      console_debug!("Using the cached session_token");
       Ok(token)
     }
   }
