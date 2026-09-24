@@ -2,9 +2,12 @@ use crate::api::request_helpers::{M2M_REST_API_V1, SESSION_TOKEN_FIELD, oauth_fi
 use crate::models::{CallbackListener, CallbackListenerResponse, Error};
 use const_format::concatcp;
 
+use super::send;
+
 /// Registers a given URL as a callback listener for the given [`CallbackListener::service_name`] and account.
 /// # Errors
-/// Returns HTTP response code or `std::error::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Reqwest` when the request itself failed or the
+/// success body did not parse.
 ///
 /// # Example
 /// ```rust
@@ -51,29 +54,16 @@ pub async fn register_callback_listener(
     .header("Content-Type", "application/json")
     .header(SESSION_TOKEN_FIELD, session_token)
     .header("Authorization", oauth_field(access_token))
-    .body(body)
-    .send()
-    .await;
+    .body(body);
 
-  match request {
-    Ok(response) => {
-      let status = response.status().as_u16();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response.json::<CallbackListenerResponse>().await?)
-    }
-    Err(e) => {
-      println!("{e:?}");
-      Err(Error::Reqwest(e))
-    }
-  }
+  let response = send(request).await?;
+  Ok(response.json::<CallbackListenerResponse>().await?)
 }
 
 /// Removes a registered callback listener for the given [`CallbackListener::service_name`] and account.
 /// # Errors
-/// Returns HTTP response code or `std::error::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Reqwest` when the request itself failed or the
+/// success body did not parse.
 ///
 /// # Example
 /// ```rust
@@ -121,24 +111,10 @@ pub async fn deregister_callback_listener(
     .header("Accept", "application/json")
     .header("Content-Type", "application/json")
     .header(SESSION_TOKEN_FIELD, session_token)
-    .header("Authorization", oauth_field(access_token))
-    .send()
-    .await;
+    .header("Authorization", oauth_field(access_token));
 
-  match request {
-    Ok(response) => {
-      let status = response.status().as_u16();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response.json::<CallbackListenerResponse>().await?)
-    }
-    Err(e) => {
-      println!("{e:?}");
-      Err(Error::Reqwest(e))
-    }
-  }
+  let response = send(request).await?;
+  Ok(response.json::<CallbackListenerResponse>().await?)
 
   // *response = ureq::delete(url)
   //   .header("Accept", "application/json")
@@ -154,7 +130,8 @@ pub async fn deregister_callback_listener(
 
 /// Returns the name and endpoint URL of the callback listening services registered for a given account.
 /// # Errors
-/// Returns HTTP response code or `std::error::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Reqwest` when the request itself failed or the
+/// success body did not parse.
 ///
 /// # Example
 /// ```rust
@@ -190,24 +167,10 @@ pub async fn list_callback_listeners(
     .get(url)
     .header("Accept", "application/json")
     .header(SESSION_TOKEN_FIELD, session_token)
-    .header("Authorization", oauth_field(access_token))
-    .send()
-    .await;
+    .header("Authorization", oauth_field(access_token));
 
-  match request {
-    Ok(response) => {
-      let status = response.status().as_u16();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response.json::<Vec<CallbackListener>>().await?)
-    }
-    Err(e) => {
-      println!("{e:?}");
-      Err(Error::Reqwest(e))
-    }
-  }
+  let response = send(request).await?;
+  Ok(response.json::<Vec<CallbackListener>>().await?)
 
   // *response = ureq::get(url)
   //   .header("Accept", "application/json")

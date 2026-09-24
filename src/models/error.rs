@@ -1,24 +1,7 @@
-use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{error, fmt};
 
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CredentialError {
-  /// ThingSpace error description
-  pub error_description: String,
-  /// ThingSpace Error reason
-  pub error: String,
-}
-
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ThingSpaceError {
-  /// ThingSpace error code
-  #[serde(rename = "errorCode")]
-  pub error_code: String,
-  /// ThingSpace error message
-  #[serde(rename = "errorMessage")]
-  pub error_message: String,
-}
-
+/// Everything a call into the SDK can fail with.
 #[derive(Debug)]
 pub enum Error {
   #[cfg(any(feature = "wasm", feature = "worker"))]
@@ -32,9 +15,49 @@ pub enum Error {
   #[cfg(feature = "reqwest")]
   Reqwest(reqwest::Error),
   Serde(serde_json::Error),
-  Credential(CredentialError),
-  ThingSpace(ThingSpaceError),
   UTF8(std::str::Utf8Error),
+  /// ThingSpace answered with an HTTP error status. `code` and `message` come from whichever of
+  /// Verizon's three error bodies it sent: an API gateway fault (`code` like `900901`), an M2M
+  /// error (`code` like `UnifiedWebService.REQUEST_FAILED.SessionToken.Expired`), or an OAuth
+  /// error (`code` like `invalid_client`); both are `None` for any other body. Verizon's messages
+  /// can quote request data such as a device identifier, so log `status` and `code` instead.
+  Api {
+    /// The HTTP status.
+    status: u16,
+    /// Verizon's error code, when the body carried one.
+    code: Option<String>,
+    /// Verizon's error message, when the body carried one.
+    message: Option<String>,
+  },
+}
+
+impl Error {
+  /// Reads an error response's body leniently, so the status survives any body at all.
+  pub(crate) fn api(status: u16, body: &[u8]) -> Error {
+    let json: Value = serde_json::from_slice(body).unwrap_or(Value::Null);
+    let (code, message) = if let Some(fault) = json.get("fault") {
+      (text(fault.get("code")), text(fault.get("message")))
+    } else if json.get("errorCode").is_some() {
+      (text(json.get("errorCode")), text(json.get("errorMessage")))
+    } else {
+      (text(json.get("error")), text(json.get("error_description")))
+    };
+
+    Error::Api {
+      status,
+      code,
+      message,
+    }
+  }
+}
+
+/// A string or number field as text; gateway fault codes arrive as either.
+fn text(value: Option<&Value>) -> Option<String> {
+  match value? {
+    Value::String(s) => Some(s.clone()),
+    Value::Number(n) => Some(n.to_string()),
+    _ => None,
+  }
 }
 
 impl fmt::Display for Error {
@@ -51,15 +74,19 @@ impl fmt::Display for Error {
       #[cfg(feature = "reqwest")]
       Error::Reqwest(e) => ("ReqwestError", e.to_string()),
       Error::Serde(e) => ("SerdeError", e.to_string()),
-      Error::Credential(e) => (
-        "CredentialError",
-        format!("\"{}\": \"{}\"", &e.error, &e.error_description),
-      ),
-      Error::ThingSpace(e) => (
-        "ThingSpaceError",
-        format!("\"{}\": \"{}\"", &e.error_code, &e.error_message),
-      ),
       Error::UTF8(e) => ("Utf8Error", e.to_string()),
+      Error::Api {
+        status,
+        code,
+        message,
+      } => (
+        "ApiError",
+        format!(
+          "\"status\": {status}, \"code\": \"{}\", \"message\": \"{}\"",
+          code.as_deref().unwrap_or_default(),
+          message.as_deref().unwrap_or_default()
+        ),
+      ),
     };
     write!(f, "{{ \"{module}\": {{ {e} }} }}")
   }
@@ -79,9 +106,8 @@ impl error::Error for Error {
       #[cfg(feature = "reqwest")]
       Error::Reqwest(e) => e,
       Error::Serde(e) => e,
-      Error::Credential(_) => return None,
-      Error::ThingSpace(_) => return None,
       Error::UTF8(e) => e,
+      Error::Api { .. } => return None,
     })
   }
 }
@@ -133,15 +159,91 @@ impl From<reqwest::Error> for Error {
   }
 }
 
-impl From<CredentialError> for Error {
-  fn from(e: CredentialError) -> Self {
-    Error::Credential(e)
-  }
-}
+#[cfg(test)]
+mod tests {
+  use super::Error;
 
-impl From<ThingSpaceError> for Error {
-  fn from(e: ThingSpaceError) -> Self {
-    Error::ThingSpace(e)
+  fn parts(status: u16, body: &str) -> (u16, Option<String>, Option<String>) {
+    match Error::api(status, body.as_bytes()) {
+      Error::Api {
+        status,
+        code,
+        message,
+      } => (status, code, message),
+      _ => unreachable!("Error::api built another variant"),
+    }
+  }
+
+  fn some(s: &str) -> Option<String> {
+    Some(s.to_string())
+  }
+
+  #[test]
+  fn a_gateway_fault_keeps_its_code() {
+    // Verizon's "Expired Bearer Token" example, with the page's template text left out.
+    let body = concat!(
+      r#"{"fault": {"code": "900901","message": "Invalid Credentials","description": "#,
+      r#""Access failure for API: /m2m/v1, version: v1. Make sure you have given the correct "#,
+      r#"access token" }}"#
+    );
+
+    assert_eq!(
+      parts(401, body),
+      (401, some("900901"), some("Invalid Credentials"))
+    );
+  }
+
+  #[test]
+  fn a_numeric_gateway_fault_code_is_read_as_text() {
+    let body = r#"{"fault":{"code":900902,"message":"Missing Credentials","description":"d"}}"#;
+
+    assert_eq!(
+      parts(401, body),
+      (401, some("900902"), some("Missing Credentials"))
+    );
+  }
+
+  #[test]
+  fn an_m2m_error_keeps_its_code() {
+    let body = r#"{"errorCode": "UnifiedWebService.REQUEST_FAILED.SessionToken.Expired",
+      "errorMessage": "The Session has expired."}"#;
+
+    assert_eq!(
+      parts(400, body),
+      (
+        400,
+        some("UnifiedWebService.REQUEST_FAILED.SessionToken.Expired"),
+        some("The Session has expired.")
+      )
+    );
+  }
+
+  #[test]
+  fn an_oauth_error_keeps_its_code() {
+    let body = r#"{"error_description":"Missing grant_type parameter value",
+      "error":"invalid_request"}"#;
+
+    assert_eq!(
+      parts(400, body),
+      (
+        400,
+        some("invalid_request"),
+        some("Missing grant_type parameter value")
+      )
+    );
+  }
+
+  #[test]
+  fn any_other_body_keeps_the_status() {
+    let xml = r#"<am:fault xmlns:am="http://wso2.org/apimanager"><am:code>404</am:code>
+      <am:type>Status report</am:type><am:message>Not Found</am:message></am:fault>"#;
+
+    assert_eq!(parts(403, xml), (403, None, None));
+    assert_eq!(parts(503, ""), (503, None, None));
+    assert_eq!(
+      parts(429, r#"{"message":"Too Many Requests"}"#),
+      (429, None, None)
+    );
   }
 }
 

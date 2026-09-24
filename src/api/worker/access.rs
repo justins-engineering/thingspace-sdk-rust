@@ -1,5 +1,7 @@
 use const_format::concatcp;
-use worker::{Fetch, Headers, Method, Request, RequestInit, Response, console_error};
+use worker::{Headers, Method, Request, RequestInit, Response};
+
+use super::fetch;
 
 use crate::api::request_helpers::{LOGIN_URL, M2M_REST_API_V1, basic_auth_field, oauth_field};
 use crate::models::{Error, SessionRequestBody};
@@ -12,7 +14,7 @@ use crate::models::{Error, SessionRequestBody};
 /// so no key length can fail or panic.
 ///
 /// # Errors
-/// Returns HTTP response code or `thingspace_sdk::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 pub async fn get_access_token(
   public_key: &str,
   private_key: &str,
@@ -36,25 +38,12 @@ pub async fn get_access_token(
 
   let request: Request = Request::new_with_init(LOGIN_URL, &request_init)?;
 
-  match Fetch::Request(request).send().await {
-    Ok(mut response) => {
-      let status = response.status_code();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::Credential(json));
-      }
-      Ok(response)
-    }
-    Err(e) => {
-      console_error!("{:?}", e);
-      Err(Error::Worker(e))
-    }
-  }
+  fetch(request).await
 }
 
 /// Makes an API request for a M2M session token and returns a [`Session`].
 /// # Errors
-/// Returns HTTP response code or `thingspace_sdk::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 pub async fn get_session_token(
   cred: &SessionRequestBody,
   access_token: &str,
@@ -75,18 +64,5 @@ pub async fn get_session_token(
   let request =
     Request::new_with_init(concatcp!(M2M_REST_API_V1, "/session/login"), &request_init)?;
 
-  match Fetch::Request(request).send().await {
-    Ok(mut response) => {
-      let status = response.status_code();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::Credential(json));
-      }
-      Ok(response)
-    }
-    Err(e) => {
-      console_error!("{:?}", e);
-      Err(Error::Worker(e))
-    }
-  }
+  fetch(request).await
 }

@@ -4,9 +4,12 @@ use crate::models::{
 };
 use const_format::concatcp;
 
+use super::send;
+
 /// Makes an API request for an Account Device List and returns a [`AccountDeviceListResponse`].
 /// # Errors
-/// Returns HTTP response code or `std::error::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Reqwest` when the request itself failed or the
+/// success body did not parse.
 ///
 /// # Example
 /// ```rust
@@ -47,24 +50,10 @@ pub async fn devices_list(
     .header("Content-Type", "application/json")
     .header(SESSION_TOKEN_FIELD, session_token)
     .header("Authorization", oauth_field(access_token))
-    .body(body)
-    .send()
-    .await;
+    .body(body);
 
-  match request {
-    Ok(response) => {
-      let status = response.status().as_u16();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response.json::<AccountDeviceListResponse>().await?)
-    }
-    Err(e) => {
-      println!("{e:?}");
-      Err(Error::Reqwest(e))
-    }
-  }
+  let response = send(request).await?;
+  Ok(response.json::<AccountDeviceListResponse>().await?)
 }
 
 pub async fn send_nidd(
@@ -85,22 +74,8 @@ pub async fn send_nidd(
     .header("Content-Type", "application/json")
     .header(SESSION_TOKEN_FIELD, session_token)
     .header("Authorization", oauth_field(access_token))
-    .body(body)
-    .send()
-    .await;
+    .body(body);
 
-  match request {
-    Ok(response) => {
-      let status = response.status().as_u16();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response.json::<NiddRequest>().await?)
-    }
-    Err(e) => {
-      println!("{e:?}");
-      Err(Error::Reqwest(e))
-    }
-  }
+  let response = send(request).await?;
+  Ok(response.json::<NiddRequest>().await?)
 }

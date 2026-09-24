@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Error::Credential` and `Error::ThingSpace` (and their `CredentialError` and `ThingSpaceError`
+  bodies) are replaced by `Error::Api { status, code, message }`, which keeps the HTTP status and
+  reads Verizon's gateway fault, M2M and OAuth error bodies alike; any other body keeps the status
+  alone instead of surfacing as a parse error
 - `LoginResponse` requires only `access_token`: `scope` and `token_type` default to empty and
   `expires_in` to 3600, since Verizon does not document the token response
 - Replaced ureq with reqwest

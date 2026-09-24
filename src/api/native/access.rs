@@ -2,6 +2,8 @@ use crate::api::request_helpers::{LOGIN_URL, M2M_REST_API_V1, basic_auth_field, 
 use crate::models::{Error, LoginResponse, Session, SessionRequestBody};
 use const_format::concatcp;
 
+use super::send;
+
 /// Makes an API request for an OAuth2 access token and returns a [`LoginResponse`].
 ///
 /// The [OAuth2 access token request](https://thingspace.verizon.com/documentation/api-documentation.html#/http/quick-start/credentials-and-tokens/obtaining-an-access_token)
@@ -9,7 +11,8 @@ use const_format::concatcp;
 /// so no key length can fail or panic.
 ///
 /// # Errors
-/// Returns HTTP response code or `std::error::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Reqwest` when the request itself failed or the
+/// success body did not parse.
 ///
 /// # Example
 /// ```rust
@@ -61,29 +64,16 @@ pub async fn get_access_token(
     .header("Accept", "application/json")
     .header("Content-Type", "application/x-www-form-urlencoded")
     .header("Authorization", auth)
-    .body("grant_type=client_credentials")
-    .send()
-    .await;
+    .body("grant_type=client_credentials");
 
-  match request {
-    Ok(response) => {
-      let status = response.status().as_u16();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response.json::<LoginResponse>().await?)
-    }
-    Err(e) => {
-      println!("{e:?}");
-      Err(Error::Reqwest(e))
-    }
-  }
+  let response = send(request).await?;
+  Ok(response.json::<LoginResponse>().await?)
 }
 
 /// Makes an API request for a M2M session token and returns a [`Session`].
 /// # Errors
-/// Returns HTTP response code or `std::error::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Reqwest` when the request itself failed or the
+/// success body did not parse.
 ///
 /// # Example
 /// ```rust
@@ -134,22 +124,8 @@ pub async fn get_session_token(
     .header("Accept", "application/json")
     .header("Content-Type", "application/json")
     .header("Authorization", oauth_field(access_token))
-    .body(body)
-    .send()
-    .await;
+    .body(body);
 
-  match request {
-    Ok(response) => {
-      let status = response.status().as_u16();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response.json::<Session>().await?)
-    }
-    Err(e) => {
-      println!("{e:?}");
-      Err(Error::Reqwest(e))
-    }
-  }
+  let response = send(request).await?;
+  Ok(response.json::<Session>().await?)
 }

@@ -1,12 +1,14 @@
 use crate::api::request_helpers::{M2M_REST_API_V1, SESSION_TOKEN_FIELD, oauth_field};
 use crate::models::{AccountDeviceListRequest, Error, NiddMessage};
 use const_format::concatcp;
-use worker::{Fetch, Headers, Method, Request, RequestInit, Response, console_error};
+use worker::{Headers, Method, Request, RequestInit, Response};
+
+use super::fetch;
 
 /// Makes an API request for an Account Device List and returns the
 /// [`AccountDeviceListResponse`] in a `worker::Response`.
 /// # Errors
-/// Returns HTTP response code or `std::error::Error`.
+/// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///
 /// # Example
 /// ```rust
@@ -67,20 +69,7 @@ pub async fn devices_list(
     &request_init,
   )?;
 
-  match Fetch::Request(request).send().await {
-    Ok(mut response) => {
-      let status = response.status_code();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response)
-    }
-    Err(e) => {
-      console_error!("{:?}", e);
-      Err(Error::Worker(e))
-    }
-  }
+  fetch(request).await
 }
 
 pub async fn send_nidd(
@@ -107,18 +96,5 @@ pub async fn send_nidd(
     &request_init,
   )?;
 
-  match Fetch::Request(request).send().await {
-    Ok(mut response) => {
-      let status = response.status_code();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response)
-    }
-    Err(e) => {
-      console_error!("{:?}", e);
-      Err(Error::Worker(e))
-    }
-  }
+  fetch(request).await
 }

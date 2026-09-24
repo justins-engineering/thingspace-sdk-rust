@@ -1,6 +1,5 @@
 mod error;
 pub use error::Error;
-pub use error::ThingSpaceError;
 
 mod login;
 pub use login::LoginResponse;

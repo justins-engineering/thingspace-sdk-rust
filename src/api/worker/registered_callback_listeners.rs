@@ -1,12 +1,13 @@
 use crate::api::request_helpers::{M2M_REST_API_V1, SESSION_TOKEN_FIELD, oauth_field};
 use crate::models::{CallbackListener, Error};
 use const_format::concatcp;
-use worker::{Fetch, Headers, Method, Request, RequestInit, Response, console_error};
+use worker::{Headers, Method, Request, RequestInit, Response};
+
+use super::fetch;
 
 /// Registers a given URL as a callback listener for the given [`CallbackListener::service_name`] and account.
 /// # Errors
-/// Returns `Error::ThingSpace()` on responses with status code 400..600
-/// Returns `Error::Worker()` on a failed Fetch request
+/// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///
 /// # Example
 /// ```rust
@@ -81,26 +82,12 @@ pub async fn register_callback_listener(
 
   let request = Request::new_with_init(&uri, &request_init)?;
 
-  match Fetch::Request(request).send().await {
-    Ok(mut response) => {
-      let status = response.status_code();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response)
-    }
-    Err(e) => {
-      console_error!("{:?}", e);
-      Err(Error::Worker(e))
-    }
-  }
+  fetch(request).await
 }
 
 /// Removes a registered callback listener for the given [`CallbackListener::service_name`] and account.
 /// # Errors
-/// Returns `Error::ThingSpace()` on responses with status code 400..600
-/// Returns `Error::Worker()` on a failed Fetch request
+/// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///
 /// # Example
 /// ```rust
@@ -153,26 +140,12 @@ pub async fn deregister_callback_listener(
 
   let request = Request::new_with_init(&uri, &request_init)?;
 
-  match Fetch::Request(request).send().await {
-    Ok(mut response) => {
-      let status = response.status_code();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response)
-    }
-    Err(e) => {
-      console_error!("{:?}", e);
-      Err(Error::Worker(e))
-    }
-  }
+  fetch(request).await
 }
 
 /// Returns the name and endpoint URL of the callback listening services registered for a given account.
 /// # Errors
-/// Returns `Error::ThingSpace()` on responses with status code 400..600
-/// Returns `Error::Worker()` on a failed Fetch request
+/// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///
 /// # Example
 /// ```rust
@@ -217,18 +190,5 @@ pub async fn list_callback_listeners(
 
   let request = Request::new_with_init(&uri, &request_init)?;
 
-  match Fetch::Request(request).send().await {
-    Ok(mut response) => {
-      let status = response.status_code();
-      if (400..600).contains(&status) {
-        let json = response.json().await?;
-        return Err(Error::ThingSpace(json));
-      }
-      Ok(response)
-    }
-    Err(e) => {
-      console_error!("{:?}", e);
-      Err(Error::Worker(e))
-    }
-  }
+  fetch(request).await
 }
