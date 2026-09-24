@@ -1,25 +1,12 @@
-use crate::api::request_helpers::{
-  BASE64_BUF_SIZE, LOGIN_URL, M2M_REST_API_V1, encode_login_field, oauth_field,
-};
+use crate::api::request_helpers::{LOGIN_URL, M2M_REST_API_V1, basic_auth_field, oauth_field};
 use crate::models::{Error, LoginResponse, Session, SessionRequestBody};
 use const_format::concatcp;
 
 /// Makes an API request for an OAuth2 access token and returns a [`LoginResponse`].
-/// # Panics
+///
 /// The [OAuth2 access token request](https://thingspace.verizon.com/documentation/api-documentation.html#/http/quick-start/credentials-and-tokens/obtaining-an-access_token)
-/// requires a partially Base64 encoded header field in the form of:
-/// ```text
-/// Authorization: Basic Base64_encoded(public_key:private_key)
-/// ```
-/// Because both of these keys *should* be 36 characters long and Base64 encoding size is
-/// deterministic we use static buffers to hold both the pre and post encoded header field.
-/// ```
-/// const LOGIN_BUF_SIZE: usize = 96;
-/// const BASE64_BUF_SIZE: usize = 128;
-/// ```
-/// There are two assertions that verify the pre and post encoded header field will fit into their
-/// respective buffers. If the `public_key` or `private_key` are substantially larger, the
-/// assertions will fail and cause a panic.
+/// sends `Authorization: Basic` and the Base64 of `public_key:private_key`, sized from the keys,
+/// so no key length can fail or panic.
 ///
 /// # Errors
 /// Returns HTTP response code or `std::error::Error`.
@@ -62,10 +49,7 @@ pub async fn get_access_token(
   private_key: &str,
   client: Option<reqwest::Client>,
 ) -> Result<LoginResponse, Error> {
-  let mut enc_buf = [0u8; BASE64_BUF_SIZE];
-  let auth = encode_login_field(public_key, private_key, &mut enc_buf)
-    .expect("Failed to encode login field");
-  let auth = std::str::from_utf8(auth)?.trim_end_matches('\0');
+  let auth = basic_auth_field(public_key, private_key);
 
   let client = match client {
     Some(c) => c,

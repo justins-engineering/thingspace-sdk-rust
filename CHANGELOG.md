@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `get_access_token` no longer panics when the key pair is longer than a fixed 96-byte buffer;
+  the `Basic` value is allocated at the size the keys need
 - The crate documentation named `ureq`, which the crate no longer uses
 - The native examples for `devices_list` and the three callback listener calls, which no longer
   compiled against the API
