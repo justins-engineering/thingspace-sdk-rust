@@ -6,6 +6,7 @@ mod browser;
 #[cfg(feature = "api")]
 mod api;
 
+#[cfg(feature = "api")]
 mod cache;
 mod callback;
 
@@ -18,15 +19,18 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     .await
 }
 
-#[cfg(all(feature = "api", not(feature = "browser")))]
+#[cfg(not(feature = "browser"))]
 #[event(fetch)]
 async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
-  Router::new()
+  let router = Router::new();
+  #[cfg(feature = "api")]
+  let router = router
     .get_async("/api/callback_listener", api::list_listeners)
     .post_async("/api/callback_listener", api::create_listeners)
     .delete_async("/api/callback_listener/:name", api::delete_listeners)
     .post_async("/api/device", api::list_devices)
-    .post_async("/api/send_nidd", api::send_nidd_msg)
+    .post_async("/api/send_nidd", api::send_nidd_msg);
+  router
     .post_async("/vzw/nidd", callback::receive_nidd_msg)
     .get_async("/connect", websocket)
     .or_else_any_method_async("/vzw", log_request)

@@ -34,9 +34,10 @@ serde-wasm-bindgen = { version = "0.4" }
 futures = { version = "0.3", default-features = false }
 
 [features]
-# default = ["api", "browser"]
-default = ["api"]
+default = []
 browser = []
+# Routes with no authentication that list callback listeners (passwords included), register and
+# remove them, list devices and send NIDD. Only for a deployment nobody else can reach.
 api = []
 
 [profile]

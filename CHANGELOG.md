@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The examples no longer log or print the access token, the session token, the browser example's
   token cookies, or raw callback bodies, which carry the listener password in clear
+- The example worker's unauthenticated `/api/*` routes are behind its `api` feature, no longer on
+  by default; the default build serves only the callback receiver and the websocket echo
 
 ### Added
 
