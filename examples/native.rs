@@ -162,6 +162,8 @@ async fn send_nidd_msgs(
   }
 }
 
+// This and the next two run from the commented-out calls at the end of `main`.
+#[allow(dead_code)]
 async fn set_callback_listener(aname: &str, cred: &mut Credentials, client: reqwest::Client) {
   let rcl = CallbackListener {
     service_name: "CarrierService".to_string(),
@@ -190,6 +192,7 @@ async fn set_callback_listener(aname: &str, cred: &mut Credentials, client: reqw
   }
 }
 
+#[allow(dead_code)]
 async fn delete_callback_listener(aname: &str, cred: &mut Credentials, client: reqwest::Client) {
   let service_name = "CarrierService".to_string();
 
@@ -214,6 +217,7 @@ async fn delete_callback_listener(aname: &str, cred: &mut Credentials, client: r
   }
 }
 
+#[allow(dead_code)]
 async fn print_listeners(aname: &str, cred: &mut Credentials, client: reqwest::Client) {
   match list_callback_listeners(aname, &cred.access_token, &cred.session_token, Some(client)).await
   {
