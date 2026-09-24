@@ -10,31 +10,19 @@ use const_format::concatcp;
 ///
 /// # Example
 /// ```rust
-/// use std::fs;
-/// use thingspace_sdk::{Secrets, LoginResponse, Session};
-/// use thingspace_sdk::devices::{AccountDeviceListRequest, AccountDeviceListResponse, devices_list};
+/// use thingspace_sdk::api::devices_list;
+/// use thingspace_sdk::models::AccountDeviceListRequest;
 ///
-/// fn device_list() {
-///   let file = fs::read_to_string("./secrets.toml").unwrap();
-///   let secrets = toml::from_str::<Secrets>(&file).expect("Failed to read from secrets.toml");
-///   let mut login = LoginResponse::default();
-///   let mut session = Session::default();
-///   let mut device_request = AccountDeviceListRequest::default();
-///   let mut device_result = AccountDeviceListResponse::default();
+/// async fn print_devices(account_name: &str, access_token: &str, session_token: &str) {
+///   let mut request = AccountDeviceListRequest::default();
 ///
-///   match devices_list(
-///     &secrets,
-///     &login.access_token,
-///     &session.session_token,
-///     &mut device_request,
-///     &mut device_result,
-///   ) {
+///   match devices_list(account_name, access_token, session_token, &mut request, None).await {
 ///     Ok(response) => {
-///       println!("{:?}", response.devices[0]);
+///       for device in response.devices {
+///         println!("{:?}", device.device_ids);
+///       }
 ///     }
-///     Err(error) => {
-///       println!("{error:?}");
-///     }
+///     Err(error) => println!("{error:?}"),
 ///   }
 /// }
 /// ```

@@ -8,35 +8,23 @@ use const_format::concatcp;
 ///
 /// # Example
 /// ```rust
-/// use std::fs;
-/// use thingspace_sdk::registered_callback_listeners::{CallbackListener, CallbackListenerResponse, register_callback_listener};
-/// use thingspace_sdk::{LoginResponse, Secrets, Session};
+/// use thingspace_sdk::api::register_callback_listener;
+/// use thingspace_sdk::models::CallbackListener;
 ///
-///
-/// fn set_callback_listener() {
-///   let file = fs::read_to_string("./secrets.toml").unwrap();
-///   let secrets = toml::from_str::<Secrets>(&file).expect("Failed to read from secrets.toml");
-///   let mut login = LoginResponse::default();
-///   let mut session = Session::default();
-///   let mut rcl = CallbackListener {
+/// async fn set_callback_listener(account_name: &str, access_token: &str, session_token: &str) {
+///   let listener = CallbackListener {
 ///     service_name: "CarrierService".to_string(),
 ///     url: "https://mock.thingspace.verizon.com/webhook".to_string(),
 ///     ..Default::default()
 ///   };
 ///
-///   let mut response = CallbackListenerResponse::default();
-///
-///   match register_callback_listener(&secrets, &login.access_token, &session.session_token, &mut rcl, &mut response) {
-///     Ok(_) => {
-///       println!(
-///         "Account: {}\nService: {}\n",
-///         response.account_name,
-///         response.service_name,
-///       );
+///   match register_callback_listener(account_name, access_token, session_token, &listener, None)
+///     .await
+///   {
+///     Ok(response) => {
+///       println!("Account: {}\nService: {}", response.account_name, response.service_name);
 ///     }
-///     Err(error) => {
-///       println!("{error:?}");
-///     }
+///     Err(error) => println!("{error:?}"),
 ///   }
 /// }
 /// ```
@@ -89,31 +77,24 @@ pub async fn register_callback_listener(
 ///
 /// # Example
 /// ```rust
-/// use std::fs;
-/// use thingspace_sdk::registered_callback_listeners::{CallbackListenerResponse, deregister_callback_listener};
-/// use thingspace_sdk::{LoginResponse, Secrets, Session};
+/// use thingspace_sdk::api::deregister_callback_listener;
 ///
+/// async fn delete_callback_listener(account_name: &str, access_token: &str, session_token: &str) {
+///   let service_name = "CarrierService";
 ///
-/// fn delete_callback_listener() {
-///   let file = fs::read_to_string("./secrets.toml").unwrap();
-///   let secrets = toml::from_str::<Secrets>(&file).expect("Failed to read from secrets.toml");
-///   let mut login = LoginResponse::default();
-///   let mut session = Session::default();
-///   let service_name = "CarrierService".to_string();
-///
-///   let mut response = CallbackListenerResponse::default();
-///
-///   match deregister_callback_listener(&secrets, &login.access_token, &session.session_token, &service_name, &mut response) {
-///     Ok(_) => {
-///       println!(
-///         "Account: {}\nService: {}\n",
-///         response.account_name,
-///         response.service_name,
-///       );
+///   match deregister_callback_listener(
+///     account_name,
+///     access_token,
+///     session_token,
+///     service_name,
+///     None,
+///   )
+///   .await
+///   {
+///     Ok(response) => {
+///       println!("Account: {}\nService: {}", response.account_name, response.service_name);
 ///     }
-///     Err(error) => {
-///       println!("{error:?}");
-///     }
+///     Err(error) => println!("{error:?}"),
 ///   }
 /// }
 /// ```
@@ -177,35 +158,16 @@ pub async fn deregister_callback_listener(
 ///
 /// # Example
 /// ```rust
-/// use std::fs;
-/// use thingspace_sdk::registered_callback_listeners::{CallbackListener, list_callback_listeners};
-/// use thingspace_sdk::{LoginResponse, Secrets, Session};
+/// use thingspace_sdk::api::list_callback_listeners;
 ///
-///
-/// fn print_listeners() {
-///   let file = fs::read_to_string("./secrets.toml").unwrap();
-///   let secrets = toml::from_str::<Secrets>(&file).expect("Failed to read from secrets.toml");
-///   let mut login = LoginResponse::default();
-///   let mut session = Session::default();
-///   let mut rcls = vec![CallbackListener {
-///     account_name: Some(String::with_capacity(16)),
-///     ..Default::default()
-///   }];
-///
-///   match list_callback_listeners(&secrets, &login.access_token, &session.session_token, &mut rcls) {
-///     Ok(_) => {
-///       for rcl in rcls {
-///         println!(
-///           "\n Account-name: {}\nService: {}\nurl: {}\n",
-///           rcl.account_name.unwrap(),
-///           rcl.service_name,
-///           rcl.url
-///         );
+/// async fn print_listeners(account_name: &str, access_token: &str, session_token: &str) {
+///   match list_callback_listeners(account_name, access_token, session_token, None).await {
+///     Ok(listeners) => {
+///       for listener in listeners {
+///         println!("Service: {}\nurl: {}", listener.service_name, listener.url);
 ///       }
 ///     }
-///     Err(error) => {
-///       println!("{error:?}");
-///     }
+///     Err(error) => println!("{error:?}"),
 ///   }
 /// }
 /// ```
