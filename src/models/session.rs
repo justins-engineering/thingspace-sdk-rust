@@ -56,6 +56,18 @@ mod tests {
   use super::{Session, SessionRequestBody};
 
   #[test]
+  fn the_documented_login_response_parses() {
+    let body = r#"{"sessionToken": "bcce3ea6-fe4f-4952-bacf-eadd80718e83"}"#;
+
+    let session: Session = serde_json::from_str(body).unwrap();
+    assert_eq!(
+      session.session_token,
+      "bcce3ea6-fe4f-4952-bacf-eadd80718e83"
+    );
+    assert_eq!(session.expires_in, 1200);
+  }
+
+  #[test]
   fn debug_redacts_the_session_token_and_the_password() {
     let session = Session {
       session_token: "bcce3ea6-fe4f-4952-bacf-eadd80718e83".to_string(),

@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `LoginResponse` requires only `access_token`: `scope` and `token_type` default to empty and
+  `expires_in` to 3600, since Verizon does not document the token response
 - Replaced ureq with reqwest
 - Renamed linux api to native
 - Updated native samples
