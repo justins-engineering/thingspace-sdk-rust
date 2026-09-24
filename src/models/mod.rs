@@ -15,8 +15,11 @@ pub use devices::Device;
 pub use devices::DeviceID;
 
 mod nidd;
+pub use nidd::MAX_NIDD_BYTES;
+pub use nidd::NIDD_DELIVERY_TIME_SECS;
 pub use nidd::NiddCallback;
 pub use nidd::NiddMessage;
+pub use nidd::NiddMessageError;
 pub use nidd::NiddRequest;
 pub use nidd::NiddResponse;
 

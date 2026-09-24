@@ -56,12 +56,21 @@ pub async fn devices_list(
   Ok(response.json::<AccountDeviceListResponse>().await?)
 }
 
+/// Sends one NIDD message to the devices it names; ThingSpace's callbacks repeat the returned
+/// [`NiddRequest`]'s `request_id`.
+///
+/// # Errors
+/// [`Error::NiddMessage`] before any request when the message fails
+/// [`NiddMessage::validate`], [`Error::Api`] for an HTTP error status, `Error::Reqwest` when the
+/// request itself failed or the success body did not parse.
 pub async fn send_nidd(
   access_token: &str,
   session_token: &str,
-  nidd_msg: &mut NiddMessage,
+  nidd_msg: &NiddMessage,
   client: Option<reqwest::Client>,
 ) -> Result<NiddRequest, Error> {
+  nidd_msg.validate()?;
+
   let body = serde_json::to_string(nidd_msg)?;
   let client = match client {
     Some(c) => c,

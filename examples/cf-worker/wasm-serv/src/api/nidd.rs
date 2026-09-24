@@ -24,7 +24,7 @@ pub async fn send_nidd_msg(mut req: Request, ctx: RouteContext<()>) -> worker::R
 
     msg.account_name = aname.to_string();
 
-    let vz_req = send_nidd(&atoken, &stoken, &mut msg).await;
+    let vz_req = send_nidd(&atoken, &stoken, &msg).await;
 
     match vz_req {
       Ok(resp) => Ok(resp),

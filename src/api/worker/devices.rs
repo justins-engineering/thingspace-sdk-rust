@@ -72,11 +72,20 @@ pub async fn devices_list(
   fetch(request).await
 }
 
+/// Sends one NIDD message to the devices it names; the success body is a
+/// [`NiddRequest`](crate::models::NiddRequest) whose `requestId` ThingSpace's callbacks repeat.
+///
+/// # Errors
+/// [`Error::NiddMessage`] before any request when the message fails
+/// [`NiddMessage::validate`], [`Error::Api`] for an HTTP error status, `Error::Worker` when the
+/// fetch itself failed.
 pub async fn send_nidd(
   access_token: &str,
   session_token: &str,
-  nidd_msg: &mut NiddMessage,
+  nidd_msg: &NiddMessage,
 ) -> Result<Response, Error> {
+  nidd_msg.validate()?;
+
   let headers = Headers::new();
   headers.append("Accept", "application/json")?;
   headers.append("Content-Type", "application/json")?;

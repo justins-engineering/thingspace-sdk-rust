@@ -1,5 +1,8 @@
 mod message;
+pub use message::MAX_NIDD_BYTES;
+pub use message::NIDD_DELIVERY_TIME_SECS;
 pub use message::NiddMessage;
+pub use message::NiddMessageError;
 
 mod request;
 pub use request::NiddRequest;

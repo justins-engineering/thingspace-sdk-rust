@@ -17,10 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `NiddMessage::validate`, `MAX_NIDD_BYTES`, `NIDD_DELIVERY_TIME_SECS` and
+  `Error::NiddMessage(NiddMessageError)`: `send_nidd` refuses a message over 1358 decoded bytes or
+  a delivery time outside 2..=2592000 s before sending anything
 - examples/native.rs
 
 ### Changed
 
+- `send_nidd` takes `&NiddMessage`; it never needed `&mut`
 - `Error::Credential` and `Error::ThingSpace` (and their `CredentialError` and `ThingSpaceError`
   bodies) are replaced by `Error::Api { status, code, message }`, which keeps the HTTP status and
   reads Verizon's gateway fault, M2M and OAuth error bodies alike; any other body keeps the status

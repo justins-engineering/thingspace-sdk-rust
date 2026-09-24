@@ -138,21 +138,14 @@ async fn send_nidd_msgs(
   dev_ids: Vec<DeviceID>,
   client: reqwest::Client,
 ) {
-  let mut msg = NiddMessage {
+  let msg = NiddMessage {
     account_name: aname.to_string(),
     device_ids: dev_ids,
     maximum_delivery_time: 30,
     message: "SEVMTE8=".to_string(),
   };
 
-  match send_nidd(
-    &cred.access_token,
-    &cred.session_token,
-    &mut msg,
-    Some(client),
-  )
-  .await
-  {
+  match send_nidd(&cred.access_token, &cred.session_token, &msg, Some(client)).await {
     Ok(response) => {
       println!("{response:?}",);
     }

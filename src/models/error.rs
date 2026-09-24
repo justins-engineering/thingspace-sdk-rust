@@ -1,3 +1,4 @@
+use crate::models::NiddMessageError;
 use serde_json::Value;
 use std::{error, fmt};
 
@@ -16,6 +17,8 @@ pub enum Error {
   Reqwest(reqwest::Error),
   Serde(serde_json::Error),
   UTF8(std::str::Utf8Error),
+  /// A NIDD message ThingSpace would refuse, caught before any request was sent.
+  NiddMessage(NiddMessageError),
   /// ThingSpace answered with an HTTP error status. `code` and `message` come from whichever of
   /// Verizon's three error bodies it sent: an API gateway fault (`code` like `900901`), an M2M
   /// error (`code` like `UnifiedWebService.REQUEST_FAILED.SessionToken.Expired`), or an OAuth
@@ -75,6 +78,7 @@ impl fmt::Display for Error {
       Error::Reqwest(e) => ("ReqwestError", e.to_string()),
       Error::Serde(e) => ("SerdeError", e.to_string()),
       Error::UTF8(e) => ("Utf8Error", e.to_string()),
+      Error::NiddMessage(e) => ("NiddMessageError", format!("{e:?}")),
       Error::Api {
         status,
         code,
@@ -107,7 +111,7 @@ impl error::Error for Error {
       Error::Reqwest(e) => e,
       Error::Serde(e) => e,
       Error::UTF8(e) => e,
-      Error::Api { .. } => return None,
+      Error::NiddMessage(_) | Error::Api { .. } => return None,
     })
   }
 }
@@ -156,6 +160,12 @@ impl From<worker::Error> for Error {
 impl From<reqwest::Error> for Error {
   fn from(e: reqwest::Error) -> Self {
     Error::Reqwest(e)
+  }
+}
+
+impl From<NiddMessageError> for Error {
+  fn from(e: NiddMessageError) -> Self {
+    Error::NiddMessage(e)
   }
 }
 
