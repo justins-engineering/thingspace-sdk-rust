@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-/// A struct containing a registered callback listener.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+/// A struct containing a registered callback listener. Its `Debug` redacts the password.
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct CallbackListener {
   #[serde(rename(serialize = "name"), alias = "name")]
@@ -30,6 +30,18 @@ impl Default for CallbackListener {
       password: Option::default(),
       account_name: Option::default(),
     }
+  }
+}
+
+impl fmt::Debug for CallbackListener {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.debug_struct("CallbackListener")
+      .field("service_name", &self.service_name)
+      .field("url", &self.url)
+      .field("username", &self.username)
+      .field("password", &self.password.as_ref().map(|_| "<redacted>"))
+      .field("account_name", &self.account_name)
+      .finish()
   }
 }
 
@@ -69,5 +81,25 @@ impl Default for CallbackListenerResponse {
       account_name: String::with_capacity(32),
       service_name: String::with_capacity(32),
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::CallbackListener;
+
+  #[test]
+  fn debug_redacts_the_password() {
+    let listener = CallbackListener {
+      username: Some("zbeeblebrox".to_string()),
+      password: Some("IMgr8".to_string()),
+      ..Default::default()
+    };
+
+    let debug = format!("{listener:?}");
+    assert!(!debug.contains("IMgr8"));
+    assert!(debug.contains("zbeeblebrox"));
+    assert!(debug.contains("Some(\"<redacted>\")"));
+    assert!(format!("{:?}", CallbackListener::default()).contains("password: None"));
   }
 }

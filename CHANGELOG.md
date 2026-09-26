@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   token cookies, or raw callback bodies, which carry the listener password in clear
 - The example worker's unauthenticated `/api/*` routes are behind its `api` feature, no longer on
   by default; the default build serves only the callback receiver and the websocket echo
-- `Debug` for `LoginResponse`, `Session` and `SessionRequestBody` redacts the token or password
+- `Debug` for `LoginResponse`, `Session`, `SessionRequestBody` and `CallbackListener` redacts the
+  token or password
 
 ### Added
 
