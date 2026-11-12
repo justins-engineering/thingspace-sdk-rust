@@ -15,7 +15,7 @@ use super::send;
 /// success body did not parse.
 ///
 /// # Example
-/// ```rust
+/// ```rust,no_run
 /// use serde::{Deserialize, Serialize};
 /// use std::fs;
 /// use thingspace_sdk::api::get_access_token;
@@ -76,7 +76,7 @@ pub async fn get_access_token(
 /// success body did not parse.
 ///
 /// # Example
-/// ```rust
+/// ```rust,no_run
 /// use serde::{Deserialize, Serialize};
 /// use std::fs;
 /// use thingspace_sdk::api::get_session_token;

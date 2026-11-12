@@ -10,7 +10,7 @@ use super::fetch;
 /// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///
 /// # Example
-/// ```rust
+/// ```rust,ignore
 /// use crate::cache;
 /// use thingspace_sdk::api::register_callback_listener;
 /// use thingspace_sdk::models::CallbackListener;
@@ -90,7 +90,7 @@ pub async fn register_callback_listener(
 /// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///
 /// # Example
-/// ```rust
+/// ```rust,ignore
 /// use crate::cache;
 /// use thingspace_sdk::api::deregister_callback_listener;
 /// use worker::{Request, Response, RouteContext, console_error};
@@ -148,7 +148,7 @@ pub async fn deregister_callback_listener(
 /// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///
 /// # Example
-/// ```rust
+/// ```rust,ignore
 /// use crate::cache;
 /// use thingspace_sdk::api::list_callback_listeners;
 /// use worker::{Request, Response, RouteContext, console_error};

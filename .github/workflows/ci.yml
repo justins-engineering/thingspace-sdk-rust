@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      # .cargo/config.toml builds host code with -Ctarget-cpu=native, and runners differ in CPU,
+      # so a cache made on one model could hand another instructions it lacks.
+      - id: cpu
+        run: |
+          model="$(grep -m1 'model name' /proc/cpuinfo | tr -cs A-Za-z0-9 _)"
+          echo "model=$model" >>"$GITHUB_OUTPUT"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ steps.cpu.outputs.model }}
+      # Run through bash so the step does not depend on the mode test.sh was committed with.
+      - run: bash test.sh

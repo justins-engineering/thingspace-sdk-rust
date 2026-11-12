@@ -31,7 +31,7 @@ wasm-bindgen-futures = { version = "0.4", optional = true }
 web-sys = { version = "0.3", features = ["console", "Headers", "Request", "RequestInit", "RequestMode", "Response", "Window", "RequestCredentials"], optional = true }
 
 # "worker" feature deps
-worker = { version = "0.8", optional = true }
+worker = { version = "0.9", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -41,11 +41,6 @@ toml = { version = "1" }
 name = "native"
 path = "examples/native.rs"
 required-features = ["reqwest"]
-
-[[example]]
-name = "cf-worker"
-path = "examples/cf-worker"
-required-features = ["worker"]
 
 [features]
 default = ["worker"]

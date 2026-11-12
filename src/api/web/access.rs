@@ -6,8 +6,7 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestCredentials, RequestInit, RequestMode, Response};
 
 use crate::api::request_helpers::{LOGIN_URL, M2M_REST_API_V1, basic_auth_field, oauth_field};
-use crate::models::{LoginResponse, Session, SessionRequestBody};
-use const_format::concatcp;
+use crate::models::{Error, LoginResponse, Session, SessionRequestBody};
 
 /// When debugging your Worker via `wrangler dev`, `wrangler tail`, or from the Workers Dashboard,
 /// anything passed to this macro will be printed to the terminal or written to the console.

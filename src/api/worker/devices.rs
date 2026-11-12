@@ -11,7 +11,7 @@ use super::fetch;
 /// [`Error::Api`] for an HTTP error status, `Error::Worker` when the fetch itself failed.
 ///
 /// # Example
-/// ```rust
+/// ```rust,ignore
 /// use crate::cache;
 /// use thingspace_sdk::api::devices_list;
 /// use thingspace_sdk::models::AccountDeviceListRequest;

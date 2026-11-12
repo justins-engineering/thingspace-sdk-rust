@@ -12,7 +12,7 @@ use super::send;
 /// success body did not parse.
 ///
 /// # Example
-/// ```rust
+/// ```rust,no_run
 /// use thingspace_sdk::api::devices_list;
 /// use thingspace_sdk::models::AccountDeviceListRequest;
 ///

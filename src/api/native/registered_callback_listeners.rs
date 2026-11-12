@@ -10,7 +10,7 @@ use super::send;
 /// success body did not parse.
 ///
 /// # Example
-/// ```rust
+/// ```rust,no_run
 /// use thingspace_sdk::api::register_callback_listener;
 /// use thingspace_sdk::models::CallbackListener;
 ///
@@ -66,7 +66,7 @@ pub async fn register_callback_listener(
 /// success body did not parse.
 ///
 /// # Example
-/// ```rust
+/// ```rust,no_run
 /// use thingspace_sdk::api::deregister_callback_listener;
 ///
 /// async fn delete_callback_listener(account_name: &str, access_token: &str, session_token: &str) {
@@ -134,7 +134,7 @@ pub async fn deregister_callback_listener(
 /// success body did not parse.
 ///
 /// # Example
-/// ```rust
+/// ```rust,no_run
 /// use thingspace_sdk::api::list_callback_listeners;
 ///
 /// async fn print_listeners(account_name: &str, access_token: &str, session_token: &str) {
